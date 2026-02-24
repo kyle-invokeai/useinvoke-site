@@ -1,5 +1,7 @@
 'use client';
 
+const DEMO_PHONE = '+19999999999';
+
 import { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -20,16 +22,61 @@ function ChatInterface() {
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load phone from query param or localStorage
+  // Access control states
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [accessAllowed, setAccessAllowed] = useState(false);
+  const [accessError, setAccessError] = useState('');
+  const [isDemo, setIsDemo] = useState(false);
+
+  // Load phone from query param or localStorage and check access
   useEffect(() => {
-    const phoneParam = searchParams.get('phone');
-    if (phoneParam) {
-      setPhone(phoneParam);
-      localStorage.setItem('invoke_preview_phone', phoneParam);
-    } else {
-      const stored = localStorage.getItem('invoke_preview_phone');
-      if (stored) setPhone(stored);
-    }
+    const checkAccess = async () => {
+      let phoneToCheck = searchParams.get('phone') || '';
+
+      if (!phoneToCheck) {
+        const stored = localStorage.getItem('invoke_preview_phone');
+        if (stored) phoneToCheck = stored;
+      }
+
+      if (!phoneToCheck) {
+        setCheckingAccess(false);
+        setAccessError('No phone number provided');
+        return;
+      }
+
+      setPhone(phoneToCheck);
+
+      // Check if demo phone
+      if (phoneToCheck === DEMO_PHONE) {
+        setIsDemo(true);
+        setAccessAllowed(true);
+        setCheckingAccess(false);
+        localStorage.setItem('invoke_preview_phone', phoneToCheck);
+        return;
+      }
+
+      // Check access via API
+      try {
+        const response = await fetch(`/api/preview/access?phone=${encodeURIComponent(phoneToCheck)}`);
+        const data = await response.json();
+
+        if (response.ok && data.allowed) {
+          setAccessAllowed(true);
+          setIsDemo(data.demo || false);
+          localStorage.setItem('invoke_preview_phone', phoneToCheck);
+        } else {
+          setAccessAllowed(false);
+          setAccessError(data.error || 'Access denied');
+        }
+      } catch (err) {
+        setAccessAllowed(false);
+        setAccessError('Failed to verify access');
+      } finally {
+        setCheckingAccess(false);
+      }
+    };
+
+    checkAccess();
   }, [searchParams]);
 
   // Scroll to bottom on new messages
@@ -61,7 +108,7 @@ function ChatInterface() {
         body: JSON.stringify({
           from: phone,
           body: messageText,
-          channel: 'web',
+          channel: isDemo ? 'demo' : 'web',
         }),
       });
 
@@ -97,6 +144,8 @@ function ChatInterface() {
     e.preventDefault();
     if (phone) {
       localStorage.setItem('invoke_preview_phone', phone);
+      // Reload to trigger access check
+      window.location.href = `/preview?phone=${encodeURIComponent(phone)}`;
     }
   };
 
@@ -138,10 +187,13 @@ function ChatInterface() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">Welcome to Invoke Preview</h2>
+              <h2 className="text-xl font-semibold text-white mb-2">
+                {isDemo ? 'Demo Mode' : 'Welcome to Invoke Preview'}
+              </h2>
               <p className="text-slate-400 max-w-md mx-auto">
-                This simulates the SMS experience. Type a message below to start the conversation.
-                Try typing "hello" or "//invoke" to begin.
+                {isDemo
+                  ? 'This is a demo with sample data. Type a message below to try the conversation flow.'
+                  : 'This simulates the SMS experience. Type a message below to start the conversation. Try typing "hello" or "//invoke" to begin.'}
               </p>
             </div>
           )}
@@ -211,7 +263,9 @@ function ChatInterface() {
           </button>
         </div>
         <p className="max-w-2xl mx-auto mt-2 text-xs text-slate-500 text-center">
-          This is a preview of the SMS experience. Messages are not sent to your actual phone.
+          {isDemo
+            ? 'Demo mode - No data is saved to the database.'
+            : 'This is a preview of the SMS experience. Messages are not sent to your actual phone.'}
         </p>
       </div>
     </div>

@@ -167,6 +167,17 @@ export default function Home() {
           <p className="mt-8 text-sm text-slate-500">
             Limited early access. Launching soon.
           </p>
+
+          {/* Demo Option */}
+          <div className="mt-6 pt-6 border-t border-slate-800">
+            <p className="text-sm text-slate-400 mb-3">Want to try it first?</p>
+            <Link
+              href="/preview?phone=%2B19999999999"
+              className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-slate-300 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
+            >
+              Try Demo (no signup required)
+            </Link>
+          </div>
         </div>
       </section>
 

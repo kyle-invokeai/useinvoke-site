@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS waitlist_users (
     source TEXT DEFAULT 'web',
     status TEXT DEFAULT 'waitlist',
     interest_category INT,
+    consented BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

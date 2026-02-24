@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
           phone: normalizedPhone,
           source: 'web',
           status: 'waitlist',
+          consented: true,
         },
       ])
       .select()
