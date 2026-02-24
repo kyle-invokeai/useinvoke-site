@@ -1,0 +1,4 @@
+Thread Link,Role,Task,Owner,Status,Needs Input From,Last Update,Notes / Next Steps,Owner Name,Needs Input From Name,Days Since Last Update,Task Summary,Task Status Analysis
+This thread,PM,Design Agent GUI,Kyle,In Progress,AI Dev,5/4/2025,Add collapsible section for each file entry,Kyle Pushkin,Manya,0,Initial design pass for agent GUI,"High priority, pending dev handoff"
+[Create separate thread],Strategist,Implement Sync,Kyle,Completed,None,5/4/2025,Test error fallback and edge cases,Kyle Pushkin,,0,Finished MVP Airtable sync workflow,"Done, ready for merge"
+This thread,AI Dev,Log Error Handling,Kyle,In Review,AI Dev,5/4/2025,Refactor error output formatting for clarity,Kyle Pushkin,Manya,0,Add verbose logging on sync exceptions,Pending test feedback

@@ -1,0 +1,16 @@
+{
+  "tab_summarizer": {
+    "description": "Summarizes open browser tabs and suggests next actions.",
+    "entry": "agents.summary.summarize_agent.agent_entry",
+    "input_example": {
+      "tabs": [
+        {"title": "ChatGPT", "url": "https://chat.openai.com", "domain": "chat.openai.com", "tags": "AI, chat", "notes": ""}
+      ]
+    },
+    "output_example": {
+      "summary": "'ChatGPT' (chat.openai.com) is a web page about AI, chat.",
+      "value": "This link may be useful for research or sharing.",
+      "next_action": "Save to Notion or share with your team."
+    }
+  }
+}

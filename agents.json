@@ -1,0 +1,16 @@
+{
+  "agents": [
+    {
+      "name": "default",
+      "description": "Default agent for general Invoke queries",
+      "system_prompt": "You are the default Invoke agent. Handle general user requests.",
+      "model": "gpt-4o-mini"
+    },
+    {
+      "name": "commish",
+      "description": "Commissioner agent for settlement and resolution tasks",
+      "system_prompt": "You are the Commissioner agent. Handle settlement and resolution requests.",
+      "model": "gpt-4o-mini"
+    }
+  ]
+}

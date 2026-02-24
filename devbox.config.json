@@ -1,0 +1,15 @@
+{
+  "agent_model": "gpt-4.1",
+  "claude_model": "claude-3-opus",
+  "repo_path": "./",
+  "airtable": {
+    "api_key": "YOUR_AIRTABLE_API_KEY",
+    "base_id": "YOUR_BASE_ID",
+    "table": "Tasks"
+  },
+  "logging": {
+    "console": true,
+    "file": true,
+    "airtable": true
+  }
+}

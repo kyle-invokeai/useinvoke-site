@@ -1,0 +1,75 @@
+table_id,table_name,field_id,field_name
+tblEczhc00fJcKLkB,Tasks,fldGGjTPHRcZd6G8V,Thread Link
+tblEczhc00fJcKLkB,Tasks,fldnr08Z8vmNF3n1e,Role
+tblEczhc00fJcKLkB,Tasks,fldIlQ1MWNCxPmb92,Task
+tblEczhc00fJcKLkB,Tasks,fldnrMsmzLdl4SJqK,Owner
+tblEczhc00fJcKLkB,Tasks,fldCLHpTPjxWZ8KMK,Status
+tblEczhc00fJcKLkB,Tasks,fldBXkSiADexSNXna,Needs Input From
+tblEczhc00fJcKLkB,Tasks,fldQcaElNMRszbw7R,Last Update
+tblEczhc00fJcKLkB,Tasks,fld52Zb6OcfIvQJkl,Notes / Next Steps
+tblEczhc00fJcKLkB,Tasks,fldAgu2Aaj6mcCbWw,Owner Name
+tblEczhc00fJcKLkB,Tasks,fldR483QboRSka0EN,Needs Input From Name
+tblEczhc00fJcKLkB,Tasks,fldvyQDJfOpS63ahg,Days Since Last Update
+tblEczhc00fJcKLkB,Tasks,fldXoyjJQieOkp62S,Task Summary
+tblEczhc00fJcKLkB,Tasks,fldRUW2cWmF2dYVZC,Task Status Analysis
+tblEczhc00fJcKLkB,Tasks,fld63QGI7LuMt5dYX,Features
+tblEczhc00fJcKLkB,Tasks,fldNxqfVMqyzmzTtR,Project Updates
+tbleadCWNECgPpLXY,Team Members,fldGEScn0BkiYg9gT,Name
+tbleadCWNECgPpLXY,Team Members,flddwDz2vHtWbbwqf,Role
+tbleadCWNECgPpLXY,Team Members,fldZN2zU3WPaummMX,Responsibilities
+tbleadCWNECgPpLXY,Team Members,fldYrsbVzdVFV88Vs,Photo
+tbleadCWNECgPpLXY,Team Members,fldqZRWOFsfglraSX,Tasks
+tbleadCWNECgPpLXY,Team Members,fldl2kB5k4ztghBIS,Total Tasks
+tbleadCWNECgPpLXY,Team Members,fldZypHvnv0LKSPCp,Last Task Update
+tbleadCWNECgPpLXY,Team Members,fldNjid2mEug5oi3V,Roles Summary
+tbleadCWNECgPpLXY,Team Members,fldgAleI6lZ1Dg6tV,Features
+tbleadCWNECgPpLXY,Team Members,fldTBKYV6EtvaKI3N,Project Updates
+tbleadCWNECgPpLXY,Team Members,fldVWPgQpbOHVRpYz,Tasks (Needs Input From)
+tbleadCWNECgPpLXY,Team Members,fldHRjcdsRuNskCc6,Milestones (linked)
+tbl8REa3mGaBikA4Z,Project Updates,fld91ziXDf4HjUZfQ,Name
+tbl8REa3mGaBikA4Z,Project Updates,fldRB0oyQgBXk28Za,Update Date
+tbl8REa3mGaBikA4Z,Project Updates,fld3naoZ9YDfSNe9t,Update Description
+tbl8REa3mGaBikA4Z,Project Updates,fldhDCxxWXywgbyyg,Status
+tbl8REa3mGaBikA4Z,Project Updates,fldGnAak8P6kzpQ91,Blockers
+tbl8REa3mGaBikA4Z,Project Updates,fldsjHawkW6m1zb1L,Related Tasks
+tbl8REa3mGaBikA4Z,Project Updates,fldd4sfVRr07gB0ce,Team Member Responsible
+tbl8REa3mGaBikA4Z,Project Updates,fldtz3KqzKprHHRQi,Feature Impacted
+tbl8REa3mGaBikA4Z,Project Updates,fld6R4cAfK50rBzaZ,Photos
+tbl8REa3mGaBikA4Z,Project Updates,fld9eLM0kkAxQzinh,Days Since Last Update
+tbl8REa3mGaBikA4Z,Project Updates,fldIiaHyaKX0TxYzc,Total Related Tasks
+tbl8REa3mGaBikA4Z,Project Updates,fldQYACtOQOTupgFB,Completed Related Tasks
+tbl8REa3mGaBikA4Z,Project Updates,fldvdxaZCUYvMGbWi,Completion Percentage
+tbl8REa3mGaBikA4Z,Project Updates,fld9JHgW3vSLRWY7n,Team Member Name
+tbl8REa3mGaBikA4Z,Project Updates,fldju1DY1iBx2e4CE,Feature Name
+tbl47ilFdntuwQX02,Features,fldFbWb0SCxfPBeWy,Feature Name
+tbl47ilFdntuwQX02,Features,fldJ5h5Vj2MEXHv9W,Description
+tbl47ilFdntuwQX02,Features,fldhCMd8qqFFOPyIi,Status
+tbl47ilFdntuwQX02,Features,fld5VYjCZpnY0fkh9,Date Added
+tbl47ilFdntuwQX02,Features,fldAqh6Oq6u2NHPmx,Related Tasks
+tbl47ilFdntuwQX02,Features,fldnhEughPGpkcYt9,Team Members Involved
+tbl47ilFdntuwQX02,Features,fld6LDgJFCAb9H8UE,Last Updated
+tbl47ilFdntuwQX02,Features,fldFpNtWtV4yxLPwz,Notes
+tbl47ilFdntuwQX02,Features,fldb4U1Ec3tISaDET,Total Related Tasks
+tbl47ilFdntuwQX02,Features,fldCbXuOpkkPYqbAY,Total Team Members Involved
+tbl47ilFdntuwQX02,Features,fldNx8P4jgSJOm0VC,Last Update from Tasks
+tbl47ilFdntuwQX02,Features,fldkFEKb4en2OrSNa,Project Updates
+tbl47ilFdntuwQX02,Features,fld2TBMPDeH2mEwzl,Days Since Last Update
+tbl47ilFdntuwQX02,Features,fldsmV8MCqhLbEWHL,Is Active and Recently Updated
+tblEvhxSsh2c0TjVK,Logs,fldqZp0TG7Ea60nv9,Log ID
+tblEvhxSsh2c0TjVK,Logs,fldtS42kpJndeuKF5,Timestamp
+tblEvhxSsh2c0TjVK,Logs,fldhp4o2W0e2mWIsB,Prompt
+tblEvhxSsh2c0TjVK,Logs,fld88namBimttHxpK,Agent
+tblEvhxSsh2c0TjVK,Logs,fldr9JEn0buyauKwL,Response
+tblisu84k0jVZnzou,Milestones,fldqIYqq7BxyZD6hB,Milestone
+tblisu84k0jVZnzou,Milestones,fldBZodaUpGjk1bdA,Category
+tblisu84k0jVZnzou,Milestones,fldfSTLh6MuhNVhB9,Team Members (linked)
+tblisu84k0jVZnzou,Milestones,fld3YQfnf0PMudsbc,Status
+tblisu84k0jVZnzou,Milestones,fldaLaGOPnpTKoj7F,Done
+tblisu84k0jVZnzou,Milestones,fld5Olbla9R1XDO9G,Last Updated
+tblisu84k0jVZnzou,Milestones,fldTjvjW12wSn98Na,Date Completed
+tblRzUXxXMS26DkXT,Agent Activity,fldnQqinRGtsmP0Zd,Agent Name
+tblRzUXxXMS26DkXT,Agent Activity,fldGapIH19lREzUJA,Category
+tblRzUXxXMS26DkXT,Agent Activity,fldxOG6Opj5V6wssC,Last Run
+tblRzUXxXMS26DkXT,Agent Activity,fld8bnVWykEl6mu5F,Status
+tblRzUXxXMS26DkXT,Agent Activity,fldtdkRCy7KrcsAnP,Result Summary
+tblRzUXxXMS26DkXT,Agent Activity,fld4NFDmtuK3Pzjca,Created

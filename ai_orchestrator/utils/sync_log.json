@@ -1,0 +1,194 @@
+[
+  {
+    "timestamp": "2025-05-09T19:25:39.591294",
+    "table": "Companies",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T21:15:14.376051",
+    "table": "Companies",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T14:19:29.839403",
+    "table": "Companies",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T14:18:52.427636",
+    "table": "Companies",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T14:11:50.310001",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T14:07:31.121835",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T13:52:33.616826",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T13:51:26.184437",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T13:50:54.183644",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T13:48:40.780489",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T13:36:04.487969",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T13:25:20.117804",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-07T13:20:04.146085",
+    "table": "Sheet1",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/Companies.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-03T20:41:47.696328",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/sample_task_sync.csv",
+    "record_count": 5,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-03T20:17:36.711854",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/task_updates_for_airtable.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-03T20:17:25.553578",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/task_updates_for_airtable.csv",
+    "record_count": 7,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-03T20:17:11.579624",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/task_updates_for_airtable.csv",
+    "record_count": 8,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-03T20:03:34.054578",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/task_updates_for_airtable.csv",
+    "record_count": 8,
+    "status": "success",
+    "error": null
+  },
+  {
+    "timestamp": "2025-05-02T17:40:59.761990",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/sample_task_sync.csv",
+    "record_count": 0,
+    "status": "failure",
+    "error": "'AirtableSyncGUI' object has no attribute 'prompt_field_mapping'"
+  },
+  {
+    "timestamp": "2025-05-02T17:35:36.485615",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/sample_task_sync.csv",
+    "record_count": 0,
+    "status": "failure",
+    "error": "'AirtableSyncGUI' object has no attribute 'prompt_field_mapping'"
+  },
+  {
+    "timestamp": "2025-05-02T17:31:59.678031",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/sample_task_sync.csv",
+    "record_count": 0,
+    "status": "failure",
+    "error": "'AirtableSyncGUI' object has no attribute 'prompt_field_mapping'"
+  },
+  {
+    "timestamp": "2025-05-02T17:27:35.432190",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/sample_task_sync.csv",
+    "record_count": 0,
+    "status": "failure",
+    "error": "'AirtableSyncGUI' object has no attribute 'prompt_field_mapping'"
+  },
+  {
+    "timestamp": "2025-05-02T17:24:45.169968",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/sample_task_sync.csv",
+    "record_count": 0,
+    "status": "failure",
+    "error": "('422 Client Error: Unprocessable Entity for url: https://api.airtable.com/v0/app9O3YOLTRkapX2b/Tasks?filterByFormula=%7BTask+Name%7D+%3D+%27Design+Agent+GUI%27', \"{'type': 'INVALID_FILTER_BY_FORMULA', 'message': 'The formula for filtering records is invalid: Unknown field names: task name'}\")"
+  },
+  {
+    "timestamp": "2025-05-02T17:14:07.198942",
+    "table": "Tasks",
+    "file_path": "C:/Users/kyleb/OneDrive/Desktop/ai-agent-orchestrator/external_data_ingest/sample_task_sync.csv",
+    "record_count": 0,
+    "status": "failure",
+    "error": "('422 Client Error: Unprocessable Entity for url: https://api.airtable.com/v0/app9O3YOLTRkapX2b/Tasks?filterByFormula=%7BTask+Name%7D+%3D+%27Design+Agent+GUI%27', \"{'type': 'INVALID_FILTER_BY_FORMULA', 'message': 'The formula for filtering records is invalid: Unknown field names: task name'}\")"
+  }
+]

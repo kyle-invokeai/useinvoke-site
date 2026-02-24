@@ -1,6 +1,16 @@
-<<<<<<< HEAD
-# useinvoke-site
-=======
+Metadata-Version: 2.4
+Name: ai-orchestrator
+Version: 0.1.0
+Summary: AI Agent Orchestrator CLI: Route and manage AI agents from the command line or interactively.
+Author: Kyle B
+License: MIT
+Project-URL: Homepage, https://github.com/yourusername/ai-orchestrator
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: python-dotenv
+Dynamic: license-file
+
 # AI Orchestrator
 
 A CLI tool to route and manage AI agents for tasks like travel, project management, summarization, and more.
@@ -36,4 +46,3 @@ OPENAI_API_KEY=your_openai_key
 
 ## License
 MIT
->>>>>>> 79d3294 (Initial commit: SMS webhook, landing pages, compliance docs)

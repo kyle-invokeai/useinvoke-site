@@ -1,0 +1,6 @@
+Milestone,Category,Team Members (linked),Status,Done
+Build orchestration router,Core Logic,"['recKxrEpvkWGVzMAG', 'rec0Wp3KX40OBuyEB']",Done,True
+Design classifier agent,Routing,['recKxrEpvkWGVzMAG'],To Do,
+Enable agents to log unrouted prompts,Logging,['recKxrEpvkWGVzMAG'],Done,True
+Connect GPT to Airtable,Integration,['recKxrEpvkWGVzMAG'],Done,True
+Enable agents to self-mark completion,Automation,['recKxrEpvkWGVzMAG'],To Do,

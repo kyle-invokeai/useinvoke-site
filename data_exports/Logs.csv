@@ -1,0 +1,23 @@
+Log ID,Timestamp,Prompt,Agent,Response
+recEzPU7NCGcgRLPc,2025-04-15T11:51:18.014Z,orchestrate my day with team sync,orchestrator_agent,Orchestrator agent responding to: orchestrate my day with team sync
+recKQpX9dRsMOgDWE,2025-04-17T23:46:18.777Z,what newq things can you,unrouted_agent,🤖 I don't recognize that request. Try again with a clearer instruction.
+recN3hKI9wDjkmW0x,2025-04-15T06:26:32.807Z,"PM, i need to",pm_agent,"PM agent responding to: PM, i need to"
+recPERJgNBmDxYYtK,2025-04-17T23:46:21.514Z,lljkfg,unrouted_agent,🤖 I don't recognize that request. Try again with a clearer instruction.
+recRXyLGBcxUEKPxQ,2025-04-17T04:40:52.518Z,I have an idea,ideas_agent,Ideas agent responding to: I have an idea
+recTG5yDgHwHs7uHu,2025-04-15T06:13:08.152Z,I have an idea that needs to be captured,ideas_agent,Ideas agent responding to: I have an idea that needs to be captured
+recXNNNVc9baTq2gl,2025-04-15T13:10:14.377Z,I want to go on a trip to Japan,travel_agent,Travel agent responding to: I want to go on a trip to Japan
+recY9wYLCfG4k7EUg,2025-04-17T05:03:09.020Z,ideas agent,ideas_agent,Ideas agent responding to: ideas agent
+recawXzSsLMzhrTcA,2025-04-17T05:02:57.996Z,I have a magic trick,unrouted_agent,🤖 I don't recognize that request. Try again with a clearer instruction.
+recb1rZn69H4N91KW,2025-04-17T05:04:32.997Z,mark Design classifier agent as done,unrouted_agent,🤖 I don't recognize that request. Try again with a clearer instruction.
+recdDgGEv0KtDKxrq,2025-04-15T06:26:55.710Z,I have an idea that needs to be captured,ideas_agent,Ideas agent responding to: I have an idea that needs to be captured
+recfje2mkkQCMKOCC,2025-04-15T06:36:25.367Z,I have a dream,unrouted_agent,🤖 I don't recognize that request. Try again with a clearer instruction.
+recj3qEwClLS8lB8d,2025-04-15T11:51:18.014Z,trip to Tokyo,travel_agent,Travel agent responding to: trip to Tokyo
+reclxlavIFD2yBGn1,2025-04-17T04:08:34.542Z,I have a trip idea,travel_agent,Travel agent responding to: I have a trip idea
+recq4sjAIY9tKjjpY,2025-04-15T11:51:18.014Z,idea,ideas_agent,Ideas agent responding to: idea
+rectoNow59JbhF4yx,2025-04-15T06:11:32.001Z,I want to go on a trip to Austrailia with my wife manya,travel_agent,Travel agent responding to: I want to go on a trip to Austrailia with my wife manya
+recuByU3PaRKkZAjH,2025-04-17T04:38:11.125Z,I want to track a trip and the progress to booking,travel_agent,Travel agent responding to: I want to track a trip and the progress to booking
+recuG2pAGQ31cVNV4,2025-04-17T04:37:52.238Z,I have a business travel idea,ideas_agent,Ideas agent responding to: I have a business travel idea
+recver8tEOkBfZQKZ,2025-04-17T04:37:30.333Z,connect GPT to airtable,unrouted_agent,🤖 I don't recognize that request. Try again with a clearer instruction.
+recvhzqLIFqpjkJQl,2025-04-17T23:36:39.573Z,what actions can you drive?,unrouted_agent,🤖 I don't recognize that request. Try again with a clearer instruction.
+recwhnea8UNAaVNHB,2025-04-15T06:15:12.145Z,"PM, i need to",pm_agent,"PM agent responding to: PM, i need to"
+recz9voWLKrLhqxiX,2025-04-17T04:30:09.576Z,I want to track a trip and the progress to booking,travel_agent,Travel agent responding to: I want to track a trip and the progress to booking
