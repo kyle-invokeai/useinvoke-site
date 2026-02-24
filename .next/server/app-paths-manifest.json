@@ -1,0 +1,15 @@
+{
+  "/_not-found": "app/_not-found.js",
+  "/admin/page": "app/admin/page.js",
+  "/api/admin/signups/route": "app/api/admin/signups/route.js",
+  "/api/admin/auth/route": "app/api/admin/auth/route.js",
+  "/api/admin/messages/route": "app/api/admin/messages/route.js",
+  "/api/admin/stats/route": "app/api/admin/stats/route.js",
+  "/api/invoke/route": "app/api/invoke/route.js",
+  "/api/preview/access/route": "app/api/preview/access/route.js",
+  "/api/waitlist/route": "app/api/waitlist/route.js",
+  "/page": "app/page.js",
+  "/preview/page": "app/preview/page.js",
+  "/terms/page": "app/terms/page.js",
+  "/privacy/page": "app/privacy/page.js"
+}

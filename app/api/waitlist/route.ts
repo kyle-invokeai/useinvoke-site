@@ -14,14 +14,14 @@ export async function POST(request: NextRequest) {
     // Validation
     if (!phone) {
       return NextResponse.json(
-        { error: 'Phone number is required' },
+        { ok: false, error: 'Phone number is required' },
         { status: 400 }
       );
     }
 
     if (!consent) {
       return NextResponse.json(
-        { error: 'Consent is required to join the waitlist' },
+        { ok: false, error: 'Consent is required to join the waitlist' },
         { status: 400 }
       );
     }
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     if (!isValidE164(normalizedPhone)) {
       return NextResponse.json(
-        { error: 'Invalid phone number format. Please use E.164 format (+1234567890)' },
+        { ok: false, error: 'Invalid phone number format. Please use E.164 format (+1234567890)' },
         { status: 400 }
       );
     }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     if (existing) {
       return NextResponse.json(
         { 
-          success: true, 
+          ok: true,
           message: 'You are already on the waitlist!',
           phone: normalizedPhone,
           status: existing.status 
@@ -76,14 +76,14 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Supabase insert error:', error);
       return NextResponse.json(
-        { error: 'Failed to join waitlist. Please try again.' },
+        { ok: false, error: 'Failed to join waitlist. Please try again.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
       { 
-        success: true, 
+        ok: true,
         message: 'Successfully joined the waitlist!',
         phone: normalizedPhone,
         user: data 
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Waitlist API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { ok: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
