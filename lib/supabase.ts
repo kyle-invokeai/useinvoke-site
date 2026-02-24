@@ -14,7 +14,7 @@ export const supabase = supabaseUrl && supabaseKey
         persistSession: false,
       },
     })
-  : createClient('https://placeholder.supabase.co', 'placeholder', {
+  : createClient('http://localhost', 'dummy-key-for-build', {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
