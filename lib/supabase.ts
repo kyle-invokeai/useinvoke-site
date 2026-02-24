@@ -5,16 +5,21 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-if (!supabaseUrl || !supabaseKey) {
-  console.warn('Supabase credentials not configured. Database operations will fail.');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+// Create client only if credentials are available, otherwise create a dummy client
+// that will fail gracefully at runtime
+export const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  : createClient('https://placeholder.supabase.co', 'placeholder', {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
 
 // Client-side Supabase instance (for browser use)
 export function createClientSupabase() {
