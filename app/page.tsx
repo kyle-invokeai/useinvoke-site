@@ -107,6 +107,22 @@ export default function Home() {
       return;
     }
 
+    // Register user and track consent
+    const phoneHash = e164.replace(/\D/g, '');
+    const country = e164.startsWith('+1') ? 'US' : 'INTL';
+    
+    trackEvent('user_registered', sessionId, { 
+      phone_hash: phoneHash.slice(-4),
+      country,
+      source: 'landing_page'
+    });
+    
+    trackEvent('consent_accepted', sessionId, { 
+      phone_hash: phoneHash.slice(-4),
+      country,
+      consent_ts: new Date().toISOString()
+    });
+
     setSessionPhone(e164);
     setShowDemo(true);
   };

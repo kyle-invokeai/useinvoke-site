@@ -5,23 +5,42 @@ import { useState, useEffect } from 'react';
 interface MetricsData {
   h24: string;
   d7: string;
+  d30: string;
   visitors24h: number;
   visitors7d: number;
+  visitors30d: number;
   newUsers24h: number;
   newUsers7d: number;
+  newUsers30d: number;
+  totalUsers: number;
+  returningUsers24h: number;
+  returningUsers7d: number;
+  returningUsers30d: number;
+  returningRate24h: number;
+  returningRate7d: number;
+  returningRate30d: number;
+  retentionD1: number;
+  retentionD7: number;
+  retentionW1: number;
+  retentionM1: number;
   consented24h: number;
   consented7d: number;
+  consented30d: number;
   activeSessions: number;
   invokes24h: number;
   invokes7d: number;
+  invokes30d: number;
   errors24h: number;
   errors7d: number;
+  errors30d: number;
   latencyP50: number | null;
   latencyP95: number | null;
   tokens24h: number;
   tokens7d: number;
+  tokens30d: number;
   cost24h: number;
   cost7d: number;
+  cost30d: number;
   topAgents: { agent: string; count: number }[];
   topReferrers: { referrer_id: string; count: number }[];
   recentErrors: { ts: string; event_type: string; channel: string; meta: any }[];
@@ -40,8 +59,60 @@ function formatLatency(ms: number | null): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
+function formatPercent(n: number): string {
+  return `${n.toFixed(1)}%`;
+}
+
 function formatCurrency(n: number): string {
   return `$${n.toFixed(2)}`;
+}
+
+function RetentionCard({ title, d1, d7, w1, m1 }: { title: string; d1: number; d7: number; w1: number; m1: number }) {
+  return (
+    <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+      <h3 className="text-sm text-slate-400 mb-3">{title}</h3>
+      <div className="grid grid-cols-4 gap-2">
+        <div className="text-center">
+          <div className="text-lg font-semibold text-white">{formatPercent(d1)}</div>
+          <div className="text-[10px] text-slate-500">D1</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-semibold text-white">{formatPercent(d7)}</div>
+          <div className="text-[10px] text-slate-500">D7</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-semibold text-white">{formatPercent(w1)}</div>
+          <div className="text-[10px] text-slate-500">W1</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-semibold text-white">{formatPercent(m1)}</div>
+          <div className="text-[10px] text-slate-500">M1</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReturningUsersCard({ rate24h, rate7d, rate30d, total }: { rate24h: number; rate7d: number; rate30d: number; total: number }) {
+  return (
+    <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+      <h3 className="text-sm text-slate-400 mb-2">Total Users: {formatNumber(total)}</h3>
+      <div className="flex items-baseline gap-4">
+        <div>
+          <span className="text-2xl font-semibold text-white">{formatPercent(rate24h)}</span>
+          <span className="text-xs text-slate-500 ml-1">return 24h</span>
+        </div>
+        <div>
+          <span className="text-sm text-slate-300">{formatPercent(rate7d)}</span>
+          <span className="text-xs text-slate-500 ml-1">7d</span>
+        </div>
+        <div>
+          <span className="text-sm text-slate-300">{formatPercent(rate30d)}</span>
+          <span className="text-xs text-slate-500 ml-1">30d</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function MetricCard({ 
@@ -143,6 +214,19 @@ export default function AdminPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
           <MetricCard title="Visitors" value24h={metrics.visitors24h} value7d={metrics.visitors7d} />
           <MetricCard title="New Users" value24h={metrics.newUsers24h} value7d={metrics.newUsers7d} />
+          <ReturningUsersCard 
+            total={metrics.totalUsers} 
+            rate24h={metrics.returningRate24h} 
+            rate7d={metrics.returningRate7d} 
+            rate30d={metrics.returningRate30d} 
+          />
+          <RetentionCard 
+            title="Retention Rate" 
+            d1={metrics.retentionD1} 
+            d7={metrics.retentionD7} 
+            w1={metrics.retentionW1} 
+            m1={metrics.retentionM1} 
+          />
           <MetricCard title="Consented" value24h={metrics.consented24h} value7d={metrics.consented7d} />
           <SimpleMetricCard title="Active Sessions" value={metrics.activeSessions} />
           <MetricCard title="Invokes" value24h={metrics.invokes24h} value7d={metrics.invokes7d} />

@@ -155,3 +155,57 @@ BEGIN
   LIMIT 10;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Count returning users (users who had prior session)
+CREATE OR REPLACE FUNCTION count_returning_users(since timestamptz)
+RETURNS bigint AS $$
+BEGIN
+  RETURN (
+    SELECT COUNT(DISTINCT e1.session_id)
+    FROM events e1
+    JOIN events e2 ON e1.meta->>'phone_hash' = e2.meta->>'phone_hash'
+    WHERE e1.event_type = 'user_registered'
+    AND e1.ts >= since
+    AND e2.event_type = 'user_registered'
+    AND e2.ts < since
+    AND e1.meta->>'phone_hash' IS NOT NULL
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Calculate retention rate for a cohort
+-- cohort_date: when users first registered
+-- retention_days: how many days later to check for return
+CREATE OR REPLACE FUNCTION calculate_retention(cohort_date timestamptz, retention_days int)
+RETURNS numeric AS $$
+DECLARE
+  cohort_size bigint;
+  retained_count bigint;
+  retention_rate numeric;
+BEGIN
+  -- Get cohort size (users who registered on cohort_date)
+  SELECT COUNT(DISTINCT meta->>'phone_hash') INTO cohort_size
+  FROM events
+  WHERE event_type = 'user_registered'
+  AND ts >= cohort_date
+  AND ts < cohort_date + INTERVAL '1 day';
+  
+  IF cohort_size = 0 THEN
+    RETURN 0;
+  END IF;
+  
+  -- Get retained users (cohort users who returned after retention_days)
+  SELECT COUNT(DISTINCT e1.meta->>'phone_hash') INTO retained_count
+  FROM events e1
+  JOIN events e2 ON e1.meta->>'phone_hash' = e2.meta->>'phone_hash'
+  WHERE e1.event_type = 'user_registered'
+  AND e1.ts >= cohort_date
+  AND e1.ts < cohort_date + INTERVAL '1 day'
+  AND e2.event_type = 'user_registered'
+  AND e2.ts >= cohort_date + (retention_days || ' days')::interval
+  AND e2.ts < cohort_date + (retention_days || ' days')::interval + INTERVAL '1 day';
+  
+  retention_rate := (retained_count::numeric / cohort_size::numeric) * 100;
+  RETURN ROUND(retention_rate, 1);
+END;
+$$ LANGUAGE plpgsql;
