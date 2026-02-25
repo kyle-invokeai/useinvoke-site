@@ -518,6 +518,8 @@ function LandingPage({
   setPhone,
   countryCode,
   setCountryCode,
+  consent,
+  setConsent,
   onInvoke,
   isTransitioning,
 }: {
@@ -527,10 +529,12 @@ function LandingPage({
   setPhone: (v: string) => void;
   countryCode: string;
   setCountryCode: (v: string) => void;
+  consent: boolean;
+  setConsent: (v: boolean) => void;
   onInvoke: () => void;
   isTransitioning: boolean;
 }) {
-  const [errors, setErrors] = useState({ firstName: '', phone: '' });
+  const [errors, setErrors] = useState({ firstName: '', phone: '', consent: '' });
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value, countryCode);
@@ -541,9 +545,10 @@ function LandingPage({
     const newErrors = {
       firstName: !firstName.trim() ? 'First name required' : '',
       phone: !phone.trim() || phone.replace(/\D/g, '').length < 10 ? 'Valid phone required' : '',
+      consent: !consent ? 'Consent required to continue' : '',
     };
     setErrors(newErrors);
-    if (!newErrors.firstName && !newErrors.phone) {
+    if (!newErrors.firstName && !newErrors.phone && !newErrors.consent) {
       onInvoke();
     }
   };
@@ -599,16 +604,39 @@ function LandingPage({
           />
         </div>
         {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
+        
+        {/* Consent Checkbox */}
+        <div className="pt-2">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => {
+                setConsent(e.target.checked);
+                if (e.target.checked) setErrors(prev => ({ ...prev, consent: '' }));
+              }}
+              className="mt-1 w-4 h-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 focus:ring-blue-500 shrink-0"
+            />
+            <span className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+              I agree to receive texts from Invoke. Msg & data rates may apply. Reply STOP to cancel.{' '}
+              <a href="/privacy" className="text-blue-500 hover:underline">Privacy</a> +{' '}
+              <a href="/terms" className="text-blue-500 hover:underline">Terms</a>.
+            </span>
+          </label>
+          {errors.consent && <p className="mt-1 text-xs text-red-500">{errors.consent}</p>}
+        </div>
+
         <motion.button
           onClick={handleInvoke}
-          className="w-full mt-6 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-medium text-lg transition-all"
+          disabled={!firstName.trim() || !phone.trim() || phone.replace(/\D/g, '').length < 10 || !consent}
+          className="w-full mt-4 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-medium text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.15 }}
         >
           //invoke
         </motion.button>
-        <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-3">
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500">
           invokes a live demo message
         </p>
       </motion.div>
@@ -625,6 +653,7 @@ export default function InvokeDemo() {
   const [firstName, setFirstName] = useState('');
   const [phone, setPhone] = useState('');
   const [countryCode, setCountryCode] = useState('+1');
+  const [consent, setConsent] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -660,12 +689,14 @@ export default function InvokeDemo() {
             setPhone={setPhone}
             countryCode={countryCode}
             setCountryCode={setCountryCode}
+            consent={consent}
+            setConsent={setConsent}
             onInvoke={handleInvoke}
             isTransitioning={false}
           />
         )}
       </AnimatePresence>
-      {step !== 'landing' && step !== 'messages' && (
+      {step !== 'landing' && (
         <motion.div
           className="fixed inset-0 z-40"
           style={{
@@ -693,28 +724,29 @@ export default function InvokeDemo() {
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             >
               <IPhoneFrame>
-                <AnimatePresence mode="wait">
-                  {(step === 'lock-screen' || step === 'transition') && (
-                    <motion.div
-                      key="lock"
-                      exit={{ scale: 1.1, filter: 'blur(20px)', opacity: 0 }}
-                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                      <LockScreen onUnlock={handleUnlock} />
-                    </motion.div>
-                  )}
-                  {step === 'messages' && (
-                    <motion.div
-                      key="messages"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                      className="w-full h-full"
-                    >
-                      <MessagesApp firstName={firstName} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {step === 'lock-screen' || step === 'transition' ? (
+                  <LockScreen key="lock" onUnlock={handleUnlock} />
+                ) : step === 'unlocking' ? (
+                  <motion.div
+                    key="unlocking"
+                    initial={{ scale: 1 }}
+                    animate={{ scale: 1.1, filter: 'blur(20px)', opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="w-full h-full"
+                  >
+                    <LockScreen onUnlock={() => {}} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="messages"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="w-full h-full"
+                  >
+                    <MessagesApp firstName={firstName} />
+                  </motion.div>
+                )}
               </IPhoneFrame>
             </motion.div>
           </motion.div>
