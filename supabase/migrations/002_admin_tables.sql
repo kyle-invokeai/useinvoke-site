@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS users (
   last_seen_at timestamptz
 );
 
--- Sessions table
+-- Sessions table (id as text for client-generated IDs)
 CREATE TABLE IF NOT EXISTS sessions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id text PRIMARY KEY,
   user_id uuid REFERENCES users(id) ON DELETE CASCADE,
   channel text NOT NULL CHECK (channel IN ('web_demo', 'sms')),
   status text DEFAULT 'active' CHECK (status IN ('active', 'ended', 'error')),
@@ -27,12 +27,12 @@ CREATE TABLE IF NOT EXISTS sessions (
   last_event_at timestamptz DEFAULT now()
 );
 
--- Events table (append-only, no message content)
+-- Events table (append-only, no message content, no FK constraints for flexibility)
 CREATE TABLE IF NOT EXISTS events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   ts timestamptz DEFAULT now(),
-  user_id uuid REFERENCES users(id) ON DELETE SET NULL,
-  session_id uuid REFERENCES sessions(id) ON DELETE SET NULL,
+  user_id uuid NULL,
+  session_id text NULL,
   event_type text NOT NULL,
   channel text NOT NULL,
   meta jsonb DEFAULT '{}'::jsonb,
@@ -59,31 +59,26 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 
--- Only allow inserts from authenticated service role
-CREATE POLICY events_insert_only ON events
-  FOR INSERT TO authenticated
-  WITH CHECK (true);
+-- Drop existing policies first to avoid conflicts
+DROP POLICY IF EXISTS events_insert_only ON events;
+DROP POLICY IF EXISTS users_insert_only ON users;
+DROP POLICY IF EXISTS sessions_insert_only ON sessions;
+DROP POLICY IF EXISTS events_select ON events;
+DROP POLICY IF EXISTS users_select ON users;
+DROP POLICY IF EXISTS sessions_select ON sessions;
+DROP POLICY IF EXISTS events_service_insert ON events;
+DROP POLICY IF EXISTS users_service_insert ON users;
+DROP POLICY IF EXISTS sessions_service_insert ON sessions;
 
-CREATE POLICY users_insert_only ON users
-  FOR INSERT TO authenticated
-  WITH CHECK (true);
+-- Allow inserts (service role bypasses RLS check)
+CREATE POLICY events_service_insert ON events FOR INSERT WITH CHECK (true);
+CREATE POLICY users_service_insert ON users FOR INSERT WITH CHECK (true);
+CREATE POLICY sessions_service_insert ON sessions FOR INSERT WITH CHECK (true);
 
-CREATE POLICY sessions_insert_only ON sessions
-  FOR INSERT TO authenticated
-  WITH CHECK (true);
-
--- Select only for service role
-CREATE POLICY events_select ON events
-  FOR SELECT TO authenticated
-  USING (true);
-
-CREATE POLICY users_select ON users
-  FOR SELECT TO authenticated
-  USING (true);
-
-CREATE POLICY sessions_select ON sessions
-  FOR SELECT TO authenticated
-  USING (true);
+-- Allow SELECT for reading metrics
+CREATE POLICY events_select ON events FOR SELECT USING (true);
+CREATE POLICY users_select ON users FOR SELECT USING (true);
+CREATE POLICY sessions_select ON sessions FOR SELECT USING (true);
 
 -- Helper functions for metrics API
 
