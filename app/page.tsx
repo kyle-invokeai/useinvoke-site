@@ -31,7 +31,7 @@ function generateSessionId(): string {
 // Send event to analytics API
 async function trackEvent(eventType: string, sessionId: string, meta: Record<string, any> = {}) {
   try {
-    await fetch('/api/events', {
+    const res = await fetch('/api/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -45,6 +45,11 @@ async function trackEvent(eventType: string, sessionId: string, meta: Record<str
         },
       }),
     });
+    
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error('Event tracking failed:', res.status, errBody);
+    }
   } catch (err) {
     // Silently fail - don't block user experience
     console.error('Event tracking failed:', err);

@@ -109,7 +109,7 @@ export async function POST(request: Request) {
     if (error) {
       console.error('Event ingestion error:', error);
       return NextResponse.json(
-        { error: 'Failed to record event' },
+        { error: 'Failed to record event', details: error.message, code: error.code },
         { status: 500 }
       );
     }
