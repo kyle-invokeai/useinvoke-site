@@ -82,14 +82,14 @@ CREATE POLICY sessions_select ON sessions FOR SELECT USING (true);
 
 -- Helper functions for metrics API
 
--- Count distinct users seen in events since a given time
+-- Count distinct sessions (visitors) since a given time
 CREATE OR REPLACE FUNCTION count_distinct_users(since timestamptz)
 RETURNS bigint AS $$
 BEGIN
   RETURN (
-    SELECT COUNT(DISTINCT user_id)
+    SELECT COUNT(DISTINCT session_id)
     FROM events
-    WHERE ts >= since AND user_id IS NOT NULL
+    WHERE ts >= since AND session_id IS NOT NULL
   );
 END;
 $$ LANGUAGE plpgsql;
