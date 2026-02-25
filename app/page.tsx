@@ -1,399 +1,725 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import IPhoneFrame from '@/components/iPhoneFrame';
-import PhoneInput from '@/components/PhoneInput';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, Send } from 'lucide-react';
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface Message {
   id: string;
   direction: 'inbound' | 'outbound';
   body: string;
-  timestamp: number;
+  timestamp: Date;
+  isDraft?: boolean;
 }
 
-const CHIPS = [
-  { id: 'chatgpt', label: 'ChatGPT', response: 'Connecting to ChatGPT...\n\nHello! I\'m ready to assist you. What would you like to know?' },
-  { id: 'planner', label: 'Planner', response: 'Opening Planner...\n\nToday: 3 tasks pending\n- Review project proposal (11:00 AM)\n- Team standup (2:00 PM)\n- Deploy to production (4:00 PM)' },
-  { id: 'notes', label: 'Notes', response: 'Accessing Notes...\n\nQuick Capture:\n- Call dentist about appointment\n- Grocery: milk, eggs, coffee\n- Book flight to SF' },
-  { id: 'coordination', label: 'Coordination', response: 'Initiating Coordination...\n\nTeam Status:\n- Sarah: Available now\n- Mike: In meeting until 3 PM\n- Alex: Remote today\n\nShall I schedule a standup?' },
-];
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
 
-function formatTime(timestamp: number): string {
-  return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-}
-
-// Generate a session ID for tracking
-function generateSessionId(): string {
-  return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
-
-// Send event to analytics API
-async function trackEvent(eventType: string, sessionId: string, meta: Record<string, any> = {}) {
-  try {
-    const res = await fetch('/api/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event_type: eventType,
-        session_id: sessionId,
-        channel: 'web_demo',
-        meta: {
-          ...meta,
-          url: typeof window !== 'undefined' ? window.location.href : '',
-          userAgent: typeof window !== 'undefined' ? navigator.userAgent.slice(0, 50) : '',
-        },
-      }),
-    });
-    
-    if (!res.ok) {
-      const errBody = await res.text();
-      console.error('Event tracking failed:', res.status, errBody);
-    }
-  } catch (err) {
-    // Silently fail - don't block user experience
-    console.error('Event tracking failed:', err);
+function formatPhoneNumber(value: string, countryCode: string): string {
+  const digits = value.replace(/\D/g, '');
+  
+  if (countryCode === '+1') {
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
   }
+  return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
 }
 
-export default function Home() {
-  const [showDemo, setShowDemo] = useState(false);
+function getCurrentTime(): string {
+  return new Date().toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
+function getCurrentDate(): string {
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+// ============================================================================
+// iPHONE COMPONENT (CSS-RENDERED)
+// ============================================================================
+
+function IPhoneFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative" style={{ perspective: '1200px' }}>
+      <div 
+        className="relative mx-auto overflow-hidden"
+        style={{
+          width: 'clamp(320px, 90vw, 390px)',
+          height: 'clamp(680px, 85vh, 844px)',
+          borderRadius: '54px',
+          background: 'linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 50%, #1a1a1a 100%)',
+          boxShadow: `
+            0 0 0 2px #2a2a2a,
+            0 0 0 4px #1a1a1a,
+            0 25px 80px -20px rgba(0,0,0,0.6),
+            0 50px 120px -40px rgba(0,0,0,0.4)
+          `,
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        <div 
+          className="absolute inset-2 overflow-hidden"
+          style={{
+            borderRadius: '46px',
+            background: '#000',
+            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)',
+          }}
+        >
+          <div className="relative w-full h-full overflow-hidden" style={{ borderRadius: '44px' }}>
+            {children}
+          </div>
+          <div 
+            className="absolute top-3 left-1/2 -translate-x-1/2 z-50"
+            style={{
+              width: '120px',
+              height: '35px',
+              borderRadius: '20px',
+              background: '#000',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
+            }}
+          />
+          <div 
+            className="absolute inset-0 pointer-events-none z-40"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.01) 100%)',
+              borderRadius: '44px',
+            }}
+          />
+        </div>
+        <div className="absolute -left-1 top-28 w-1 h-16 rounded-l bg-[#1a1a1a]" />
+        <div className="absolute -left-1 top-48 w-1 h-12 rounded-l bg-[#1a1a1a]" />
+        <div className="absolute -right-1 top-36 w-1 h-20 rounded-r bg-[#1a1a1a]" />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// LOCK SCREEN COMPONENT
+// ============================================================================
+
+function LockScreen({ onUnlock }: { onUnlock: () => void }) {
+  const [time, setTime] = useState(getCurrentTime());
+  const [date, setDate] = useState(getCurrentDate());
+  const [showNotification, setShowNotification] = useState(false);
+  const [vibrate, setVibrate] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(getCurrentTime());
+      setDate(getCurrentDate());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const vibrateTimer = setTimeout(() => {
+      setVibrate(true);
+      setTimeout(() => setVibrate(false), 400);
+    }, 300);
+    const notificationTimer = setTimeout(() => {
+      setShowNotification(true);
+    }, 800);
+    return () => {
+      clearTimeout(vibrateTimer);
+      clearTimeout(notificationTimer);
+    };
+  }, []);
+
+  return (
+    <motion.div
+      className="relative w-full h-full overflow-hidden cursor-pointer"
+      style={{
+        background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
+      }}
+      animate={vibrate ? { x: [-2, 2, -2, 2, 0] } : {}}
+      transition={{ duration: 0.4 }}
+      onClick={onUnlock}
+    >
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 0%, rgba(100,100,150,0.15) 0%, transparent 50%)',
+        }}
+      />
+      <div className="absolute top-2 left-0 right-0 flex justify-between items-center px-8 pt-2 text-white text-xs font-medium z-20">
+        <span>{time}</span>
+        <div className="flex items-center gap-1.5">
+          <div className="flex gap-0.5">
+            <div className="w-1 h-2.5 bg-white rounded-sm" />
+            <div className="w-1 h-2.5 bg-white rounded-sm" />
+            <div className="w-1 h-2.5 bg-white rounded-sm" />
+            <div className="w-1 h-2.5 bg-white/40 rounded-sm" />
+          </div>
+          <div className="w-6 h-3 border border-white/40 rounded-sm flex items-center px-0.5">
+            <div className="w-4 h-1.5 bg-white rounded-sm" />
+          </div>
+        </div>
+      </div>
+      <div className="absolute top-20 left-1/2 -translate-x-1/2">
+        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+      </div>
+      <div className="absolute top-32 left-0 right-0 text-center">
+        <motion.h1 
+          className="text-7xl font-light text-white tracking-tight"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {time.replace(/\s*(AM|PM)/i, '')}
+        </motion.h1>
+        <motion.p 
+          className="mt-2 text-lg text-white/80 font-medium"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.4 }}
+        >
+          {date}
+        </motion.p>
+      </div>
+      <AnimatePresence>
+        {showNotification && (
+          <motion.div
+            className="absolute top-56 left-4 right-4"
+            initial={{ y: -100, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25, delay: 0.1 }}
+          >
+            <div 
+              className="p-4 rounded-2xl backdrop-blur-xl"
+              style={{
+                background: 'rgba(255,255,255,0.12)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 4px 30px rgba(0,0,0,0.2)',
+              }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">In</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-white text-sm font-semibold">Invoke</p>
+                  <p className="text-white/60 text-xs">now</p>
+                </div>
+              </div>
+              <p className="text-white text-base">You're connected.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <motion.div 
+        className="absolute bottom-12 left-0 right-0 text-center"
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <p className="text-white/60 text-sm font-medium">Swipe up to unlock</p>
+      </motion.div>
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/50 rounded-full" />
+    </motion.div>
+  );
+}
+
+// ============================================================================
+// MESSAGES APP COMPONENT
+// ============================================================================
+
+function MessagesApp({ firstName }: { firstName: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [showTyping, setShowTyping] = useState(false);
   const [showChips, setShowChips] = useState(false);
+  const [showMattFlow, setShowMattFlow] = useState(false);
+  const [showDelivered, setShowDelivered] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Session tracking
-  const [sessionId] = useState(() => generateSessionId());
+  const chatScript = [
+    `Hi ${firstName}.`,
+    "I'm your Invoke node.",
+    "You can route anything through me.",
+    "What would you like to invoke?",
+  ];
 
-  // Phone & consent state
-  const [phoneDisplay, setPhoneDisplay] = useState('');
-  const [e164, setE164] = useState<string | null>(null);
-  const [isPhoneValid, setIsPhoneValid] = useState(false);
-  const [consent, setConsent] = useState(false);
-  const [phoneError, setPhoneError] = useState('');
-  const [consentError, setConsentError] = useState('');
-  const [sessionPhone, setSessionPhone] = useState('');
-
-  // Form validation
-  const isFormValid = isPhoneValid && consent;
-
-  const handlePhoneChange = (display: string, e164Value: string | null, valid: boolean) => {
-    setPhoneDisplay(display);
-    setE164(e164Value);
-    setIsPhoneValid(valid);
-    setPhoneError('');
-  };
-
-  const handleInvoke = () => {
-    setPhoneError('');
-    setConsentError('');
-
-    // Track invoke attempt
-    trackEvent('invoke_started', sessionId, { 
-      agent: 'intake',
-      has_phone: !!e164,
-      has_consent: consent 
-    });
-
-    if (!isPhoneValid || !e164) {
-      setPhoneError('Enter a valid phone number.');
-      return;
-    }
-
-    if (!consent) {
-      setConsentError('Consent is required.');
-      return;
-    }
-
-    // Register user and track consent
-    const phoneHash = e164.replace(/\D/g, '');
-    const country = e164.startsWith('+1') ? 'US' : 'INTL';
-    
-    trackEvent('user_registered', sessionId, { 
-      phone_hash: phoneHash.slice(-4),
-      country,
-      source: 'landing_page'
-    });
-    
-    trackEvent('consent_accepted', sessionId, { 
-      phone_hash: phoneHash.slice(-4),
-      country,
-      consent_ts: new Date().toISOString()
-    });
-
-    setSessionPhone(e164);
-    setShowDemo(true);
-  };
-
-  // Auto-type //invoke when demo starts
-  useEffect(() => {
-    if (showDemo) {
-      setIsTyping(true);
-      const text = '//invoke';
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i <= text.length) {
-          setInputText(text.slice(0, i));
-          i++;
-        } else {
-          clearInterval(interval);
-          setIsTyping(false);
-          setTimeout(() => {
-            const userMsg: Message = {
-              id: Date.now().toString(),
-              direction: 'inbound',
-              body: '//invoke',
-              timestamp: Date.now(),
-            };
-            setMessages([userMsg]);
-            setTimeout(() => {
-              const systemMsg: Message = {
-                id: (Date.now() + 1).toString(),
-                direction: 'outbound',
-                body: 'Connected: Intake Agent\n\nWelcome to Invoke.\nWhat would you like to access?',
-                timestamp: Date.now(),
-              };
-              setMessages(prev => [...prev, systemMsg]);
-              setShowChips(true);
-            }, 600);
-          }, 400);
-        }
-      }, 100);
-      return () => clearInterval(interval);
-    }
-  }, [showDemo]);
-
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  };
 
-  // Track page view on mount
   useEffect(() => {
-    trackEvent('page_view', sessionId, { page: 'landing' });
-  }, [sessionId]);
+    scrollToBottom();
+  }, [messages, showTyping, showChips]);
 
-  // Track demo start when it becomes visible
   useEffect(() => {
-    if (showDemo) {
-      trackEvent('session_started', sessionId, { 
-        agent: 'intake',
-        phone_country: sessionPhone.startsWith('+1') ? 'US' : 'INTL'
-      });
+    if (currentStep >= chatScript.length) {
+      setShowChips(true);
+      return;
     }
-  }, [showDemo, sessionId, sessionPhone]);
+    const timer = setTimeout(() => {
+      setShowTyping(true);
+      const messageTimer = setTimeout(() => {
+        setShowTyping(false);
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          direction: 'outbound',
+          body: chatScript[currentStep],
+          timestamp: new Date(),
+        }]);
+        setCurrentStep(prev => prev + 1);
+      }, 1800);
+      return () => clearTimeout(messageTimer);
+    }, currentStep === 0 ? 500 : 1200);
+    return () => clearTimeout(timer);
+  }, [currentStep, firstName]);
 
-  const handleChipClick = (chip: typeof CHIPS[0]) => {
-    // Track chip click as invoke_started for dashboard metrics
-    trackEvent('invoke_started', sessionId, { 
-      agent: chip.id,
-      agent_label: chip.label 
-    });
-    // Also track agent_switched for session flow
-    trackEvent('agent_switched', sessionId, { 
-      agent: chip.id,
-      agent_label: chip.label 
-    });
-    const userMsg: Message = {
+  const handleChipClick = (chip: string) => {
+    setShowChips(false);
+    setMessages(prev => [...prev, {
       id: Date.now().toString(),
       direction: 'inbound',
-      body: chip.label,
-      timestamp: Date.now(),
-    };
-    setMessages(prev => [...prev, userMsg]);
-    setShowChips(false);
+      body: chip,
+      timestamp: new Date(),
+    }]);
+    if (chip === 'reach someone') {
+      setTimeout(() => {
+        setShowTyping(true);
+        setTimeout(() => {
+          setShowTyping(false);
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            direction: 'outbound',
+            body: 'Who should I connect you to?',
+            timestamp: new Date(),
+          }]);
+          setTimeout(() => setShowMattFlow(true), 500);
+        }, 1500);
+      }, 400);
+    }
+  };
+
+  const handleMattClick = () => {
+    setShowMattFlow(false);
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      direction: 'inbound',
+      body: 'Text Matt about AI commissioner rules.',
+      timestamp: new Date(),
+    }]);
+    const sequence = [
+      { msg: 'Adding Matt.', delay: 800 },
+      { msg: 'Drafting message.', delay: 1500 },
+      { msg: 'Hey Matt — want to lock in AI commissioner rules for this season this week?', delay: 2000, isDraft: true },
+      { msg: 'Send?', delay: 2500 },
+    ];
+    let cumulativeDelay = 600;
+    sequence.forEach(({ msg, delay, isDraft }) => {
+      cumulativeDelay += delay;
+      setTimeout(() => {
+        setShowTyping(true);
+        setTimeout(() => {
+          setShowTyping(false);
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            direction: isDraft ? 'inbound' : 'outbound',
+            body: msg,
+            timestamp: new Date(),
+            isDraft,
+          }]);
+          if (msg === 'Send?') {
+            setTimeout(() => setShowDelivered(true), 300);
+          }
+        }, isDraft ? 1200 : 800);
+      }, cumulativeDelay);
+    });
+  };
+
+  const handleSend = () => {
+    setShowDelivered(false);
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      direction: 'inbound',
+      body: 'Send',
+      timestamp: new Date(),
+    }]);
     setTimeout(() => {
-      const responseMsg: Message = {
-        id: (Date.now() + 1).toString(),
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
         direction: 'outbound',
-        body: chip.response,
-        timestamp: Date.now(),
-      };
-      setMessages(prev => [...prev, responseMsg]);
-      setShowChips(true);
-    }, 800);
+        body: 'Delivered.',
+        timestamp: new Date(),
+      }]);
+      setTimeout(() => {
+        setShowTyping(true);
+        setTimeout(() => {
+          setShowTyping(false);
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            direction: 'outbound',
+            body: 'Anything else?',
+            timestamp: new Date(),
+          }]);
+        }, 1200);
+      }, 600);
+    }, 400);
   };
 
   return (
-    <main className="min-h-screen text-slate-200" style={{ backgroundColor: '#0F0F0F' }}>
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-white tracking-tight">Invoke</Link>
-          <div className="flex items-center gap-6">
-            <Link href="/privacy" className="text-sm text-slate-400 hover:text-white transition-colors">Privacy</Link>
-            <Link href="/terms" className="text-sm text-slate-400 hover:text-white transition-colors">Terms</Link>
+    <div className="flex flex-col h-full bg-black">
+      <div className="flex items-center justify-center px-4 pt-12 pb-3 bg-[#1a1a1a]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="text-center">
+          <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <span className="text-white text-xs font-bold">In</span>
           </div>
+          <p className="text-white text-sm font-semibold">Invoke</p>
         </div>
-      </nav>
-
-      {/* Hero Section - Fades out when demo starts */}
-      <section 
-        className={`min-h-screen flex items-center justify-center pt-20 pb-16 px-6 transition-all duration-700 ease-out ${
-          showDemo ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100'
-        }`}
-      >
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
-            Your direct command line to Invoke.
-          </h1>
-          <p className="text-lg sm:text-xl text-slate-400 mb-8 max-w-xl mx-auto leading-relaxed">
-            Get tasks done, set reminders, plan your day, and coordinate with others — all through text.
-          </p>
-
-          {/* Intake Block - Constrained and mobile-clean */}
-          <div className="w-full max-w-[420px] mx-auto">
-            {/* Phone Input */}
-            <div className="mb-3">
-              <PhoneInput
-                value={phoneDisplay}
-                onChange={handlePhoneChange}
-                placeholder="(415) 555-0123"
-                error={phoneError}
-              />
-            </div>
-
-            {/* Consent Checkbox */}
-            <div className="mb-5 text-left">
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={consent}
-                  onChange={(e) => {
-                    setConsent(e.target.checked);
-                    setConsentError('');
-                  }}
-                  className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-500 focus:ring-blue-500 shrink-0"
-                />
-                <span className="text-xs text-slate-400 leading-snug">
-                  I agree to receive texts from Invoke. Msg & data rates may apply. Reply STOP to cancel.{' '}
-                  <Link href="/privacy" className="text-blue-400 hover:underline">Privacy</Link> +{' '}
-                  <Link href="/terms" className="text-blue-400 hover:underline">Terms</Link>.
-                </span>
-              </label>
-              {consentError && (
-                <p className="mt-1.5 text-xs text-red-400">{consentError}</p>
-              )}
-            </div>
-
-            {/* CTA Button */}
-            <button
-              onClick={handleInvoke}
-              disabled={!isFormValid}
-              className="w-full sm:w-[260px] mx-auto h-11 px-6 text-sm font-medium text-slate-950 bg-white rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {messages.map((message) => (
+          <motion.div
+            key={message.id}
+            className={`flex ${message.direction === 'inbound' ? 'justify-end' : 'justify-start'}`}
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div
+              className={`max-w-[75%] px-4 py-2.5 text-[15px] leading-relaxed ${
+                message.direction === 'inbound'
+                  ? 'bg-[#34c759] text-black rounded-2xl rounded-br-md'
+                  : 'bg-[#3a3a3c] text-white rounded-2xl rounded-bl-md'
+              }`}
             >
-              Invoke
-            </button>
-          </div>
-        </div>
-      </section>
-      {/* Demo Experience - Slides in when activated */}
-      <section 
-        className={`min-h-screen flex items-center justify-center pt-20 pb-16 px-6 transition-all duration-700 ease-out ${
-          showDemo ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none absolute inset-0'
-        }`}
-      >
-        <div className="flex flex-col items-center">
-          <IPhoneFrame>
-            <div className="flex flex-col h-full bg-slate-900">
-              {/* Chat Header */}
-              <div className="flex items-center justify-between px-4 py-3 bg-slate-800/50 border-b border-slate-700">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <span className="text-white font-semibold text-sm">Invoke</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-slate-400 text-xs block">Session</span>
-                  <span className="text-slate-300 text-[10px]">{sessionPhone}</span>
-                </div>
-              </div>
-
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3">
-                {messages.map((message) => (
-                  <div 
-                    key={message.id} 
-                    className={`flex ${message.direction === 'inbound' ? 'justify-end' : 'justify-start'}`}
+              {message.body}
+              {message.isDraft && (
+                <div className="mt-2 pt-2 border-t border-black/10">
+                  <button
+                    onClick={handleSend}
+                    className="px-4 py-1.5 bg-black/10 hover:bg-black/20 rounded-full text-sm font-medium transition-colors"
                   >
-                    <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm whitespace-pre-line ${
-                      message.direction === 'inbound'
-                        ? 'bg-blue-500 text-white rounded-br-md'
-                        : 'bg-slate-700 text-slate-200 rounded-bl-md'
-                    }`}>
-                      <p className="leading-relaxed">{message.body}</p>
-                      <span className={`text-[10px] mt-1 block ${
-                        message.direction === 'inbound' ? 'text-blue-200' : 'text-slate-400'
-                      }`}>
-                        {formatTime(message.timestamp)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input Area with Auto-type */}
-              <div className="px-3 py-3 bg-slate-800/50 border-t border-slate-700">
-                <div className="flex gap-2">
-                  <div className="flex-1 px-3 py-2 bg-slate-700 rounded-full text-white text-sm flex items-center min-h-[36px]">
-                    <span className={isTyping ? 'animate-pulse' : ''}>
-                      {inputText}
-                      {isTyping && <span className="inline-block w-0.5 h-4 bg-blue-400 ml-0.5 animate-pulse" />}
-                    </span>
-                    {!isTyping && inputText && (
-                      <span className="inline-block w-0.5 h-4 bg-slate-500 ml-0.5 animate-pulse" />
-                    )}
-                  </div>
-                  <button className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-medium opacity-50">
                     Send
                   </button>
                 </div>
-
-                {/* Clickable Chips */}
-                {showChips && (
-                  <div className="mt-3 flex flex-wrap gap-2 animate-fade-in">
-                    {CHIPS.map((chip) => (
-                      <button
-                        key={chip.id}
-                        onClick={() => handleChipClick(chip)}
-                        className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded-full transition-colors"
-                      >
-                        {chip.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
-          </IPhoneFrame>
-
-          {/* Back Button */}
-          <button
-            onClick={() => {
-              setShowDemo(false);
-              setMessages([]);
-              setInputText('');
-              setShowChips(false);
-              // Keep phone and consent values
-            }}
-            className="mt-8 text-sm text-slate-400 hover:text-white transition-colors"
+          </motion.div>
+        ))}
+        <AnimatePresence>
+          {showTyping && (
+            <motion.div
+              className="flex justify-start"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="bg-[#3a3a3c] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="w-1.5 h-1.5 bg-white/60 rounded-full"
+                    animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showDelivered && !showTyping && (
+            <motion.p
+              className="text-[11px] text-white/40 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Delivered
+            </motion.p>
+          )}
+        </AnimatePresence>
+        <div ref={messagesEndRef} />
+      </div>
+      <AnimatePresence>
+        {showChips && !showMattFlow && (
+          <motion.div
+            className="px-4 pb-4 space-y-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            ← Back to home
+            {['reach someone', 'schedule something', 'research something'].map((chip, i) => (
+              <motion.button
+                key={chip}
+                onClick={() => handleChipClick(chip)}
+                className="block w-full text-left px-4 py-3 bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white/90 rounded-xl text-sm transition-colors"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1, duration: 0.3 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {chip}
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showMattFlow && (
+          <motion.div
+            className="px-4 pb-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <button
+              onClick={handleMattClick}
+              className="block w-full text-left px-4 py-3 bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white/90 rounded-xl text-sm transition-colors"
+            >
+              Text Matt about AI commissioner rules.
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="px-4 pb-8 pt-2 bg-[#1a1a1a]">
+        <div className="flex items-center gap-2 bg-[#2c2c2e] rounded-full px-4 py-2">
+          <div className="flex-1 text-white/40 text-sm">iMessage</div>
+          <button className="w-8 h-8 bg-[#34c759] rounded-full flex items-center justify-center">
+            <Send className="w-4 h-4 text-black" />
           </button>
         </div>
-      </section>
+      </div>
+    </div>
+  );
+}
 
-      {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 py-4 px-6 text-center">
-        <p className="text-xs text-slate-500">
-          Explicit. Controlled. Command-based AI.
+// ============================================================================
+// LANDING PAGE COMPONENT
+// ============================================================================
+
+function LandingPage({
+  firstName,
+  setFirstName,
+  phone,
+  setPhone,
+  countryCode,
+  setCountryCode,
+  onInvoke,
+  isTransitioning,
+}: {
+  firstName: string;
+  setFirstName: (v: string) => void;
+  phone: string;
+  setPhone: (v: string) => void;
+  countryCode: string;
+  setCountryCode: (v: string) => void;
+  onInvoke: () => void;
+  isTransitioning: boolean;
+}) {
+  const [errors, setErrors] = useState({ firstName: '', phone: '' });
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value, countryCode);
+    setPhone(formatted);
+  };
+
+  const handleInvoke = () => {
+    const newErrors = {
+      firstName: !firstName.trim() ? 'First name required' : '',
+      phone: !phone.trim() || phone.replace(/\D/g, '').length < 10 ? 'Valid phone required' : '',
+    };
+    setErrors(newErrors);
+    if (!newErrors.firstName && !newErrors.phone) {
+      onInvoke();
+    }
+  };
+
+  return (
+    <div className={`min-h-screen flex flex-col items-center justify-center px-6 transition-all duration-700 ${isTransitioning ? 'blur-md opacity-30 scale-95' : ''}`}>
+      <motion.div
+        className="mb-12"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Invoke</h1>
+      </motion.div>
+      <motion.div
+        className="w-full max-w-sm space-y-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div>
+          <input
+            type="text"
+            placeholder="First Name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="w-full px-4 py-3.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 transition-all"
+          />
+          {errors.firstName && <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>}
+        </div>
+        <div className="flex gap-2">
+          <div className="relative">
+            <select
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+              className="appearance-none px-3 py-3.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 transition-all pr-8 cursor-pointer"
+            >
+              <option value="+1">+1</option>
+              <option value="+44">+44</option>
+              <option value="+61">+61</option>
+              <option value="+81">+81</option>
+              <option value="+49">+49</option>
+              <option value="+33">+33</option>
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+          <input
+            type="tel"
+            placeholder="(949) 500-1553"
+            value={phone}
+            onChange={handlePhoneChange}
+            className="flex-1 px-4 py-3.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 transition-all"
+          />
+        </div>
+        {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
+        <motion.button
+          onClick={handleInvoke}
+          className="w-full mt-6 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-medium text-lg transition-all"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.15 }}
+        >
+          //invoke
+        </motion.button>
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-3">
+          invokes a live demo message
         </p>
-      </footer>
-    </main>
+      </motion.div>
+    </div>
+  );
+}
+
+// ============================================================================
+// MAIN PAGE COMPONENT
+// ============================================================================
+
+export default function InvokeDemo() {
+  const [step, setStep] = useState<'landing' | 'transition' | 'lock-screen' | 'unlocking' | 'messages'>('landing');
+  const [firstName, setFirstName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+1');
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDark(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  const handleInvoke = () => {
+    setStep('transition');
+    setTimeout(() => {
+      setStep('lock-screen');
+    }, 1200);
+  };
+
+  const handleUnlock = () => {
+    setStep('unlocking');
+    setTimeout(() => {
+      setStep('messages');
+    }, 900);
+  };
+
+  return (
+    <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+      <AnimatePresence mode="wait">
+        {step === 'landing' && (
+          <LandingPage
+            firstName={firstName}
+            setFirstName={setFirstName}
+            phone={phone}
+            setPhone={setPhone}
+            countryCode={countryCode}
+            setCountryCode={setCountryCode}
+            onInvoke={handleInvoke}
+            isTransitioning={false}
+          />
+        )}
+      </AnimatePresence>
+      {step !== 'landing' && step !== 'messages' && (
+        <motion.div
+          className="fixed inset-0 z-40"
+          style={{
+            background: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.7)',
+            backdropFilter: 'blur(12px)',
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        />
+      )}
+      <AnimatePresence>
+        {step !== 'landing' && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            initial={{ y: '120%', rotateX: 12, scale: 0.92, opacity: 0 }}
+            animate={{ y: 0, rotateX: 0, scale: 1, opacity: 1 }}
+            transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <motion.div
+              animate={step === 'lock-screen' || step === 'unlocking' ? {
+                y: [0, -2, 0],
+                rotateZ: [0, 0.5, 0, -0.5, 0],
+              } : {}}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <IPhoneFrame>
+                <AnimatePresence mode="wait">
+                  {(step === 'lock-screen' || step === 'transition') && (
+                    <motion.div
+                      key="lock"
+                      exit={{ scale: 1.1, filter: 'blur(20px)', opacity: 0 }}
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <LockScreen onUnlock={handleUnlock} />
+                    </motion.div>
+                  )}
+                  {step === 'messages' && (
+                    <motion.div
+                      key="messages"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      className="w-full h-full"
+                    >
+                      <MessagesApp firstName={firstName} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </IPhoneFrame>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
