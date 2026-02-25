@@ -16,6 +16,10 @@ const ALLOWED_EVENT_TYPES = [
   'api_latency',
   'token_usage',
   'page_view',
+  'message_sent',
+  'demo_page_view',
+  'demo_intake_started',
+  'demo_intake_completed',
 ] as const;
 
 // Validate that meta does not contain message content

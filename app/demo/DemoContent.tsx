@@ -20,6 +20,36 @@ function formatTime(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
+// Generate session ID for tracking
+function generateSessionId(): string {
+  return `demo_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+// Send event to analytics API
+async function trackEvent(eventType: string, sessionId: string, meta: Record<string, any> = {}) {
+  try {
+    const res = await fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_type: eventType,
+        session_id: sessionId,
+        channel: 'web_demo',
+        meta: {
+          ...meta,
+          url: typeof window !== 'undefined' ? window.location.href : '',
+        },
+      }),
+    });
+    
+    if (!res.ok) {
+      console.error('Event tracking failed:', res.status);
+    }
+  } catch (err) {
+    console.error('Event tracking failed:', err);
+  }
+}
+
 export default function DemoContent() {
   const searchParams = useSearchParams();
   const phone = searchParams.get('phone') || 'demo-user';
@@ -27,7 +57,14 @@ export default function DemoContent() {
   const [input, setInput] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
   const [waitingForInterest, setWaitingForInterest] = useState(false);
+  const [sessionId] = useState(() => generateSessionId());
+  const [messageCount, setMessageCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Track page view on mount
+  useEffect(() => {
+    trackEvent('demo_page_view', sessionId, { phone_hash: phone.replace(/\D/g, '').slice(-4) });
+  }, [sessionId, phone]);
 
   useEffect(() => {
     const storageKey = `${STORAGE_KEY}_${phone}`;
@@ -73,6 +110,15 @@ export default function DemoContent() {
     setMessages(prev => [...prev, userMessage]);
     const currentInput = input.trim();
     setInput('');
+    
+    // Track message sent
+    const newCount = messageCount + 1;
+    setMessageCount(newCount);
+    trackEvent('message_sent', sessionId, { 
+      message_number: newCount,
+      has_started: hasStarted,
+      input_preview: currentInput.slice(0, 20)
+    });
 
     setTimeout(() => {
       let response: Message | null = null;
@@ -80,9 +126,11 @@ export default function DemoContent() {
         response = { id: (Date.now() + 1).toString(), direction: 'outbound', body: INTAKE_QUESTION, timestamp: Date.now() };
         setHasStarted(true);
         setWaitingForInterest(true);
+        trackEvent('demo_intake_started', sessionId, { trigger: '//hey' });
       } else if (waitingForInterest && /^[1-6]$/.test(currentInput)) {
         response = { id: (Date.now() + 1).toString(), direction: 'outbound', body: COMPLETION_MESSAGE, timestamp: Date.now() };
         setWaitingForInterest(false);
+        trackEvent('demo_intake_completed', sessionId, { interest_option: currentInput });
       }
       if (response) setMessages(prev => [...prev, response!]);
     }, 500);

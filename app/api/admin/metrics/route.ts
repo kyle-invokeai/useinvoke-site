@@ -48,6 +48,7 @@ interface MetricsData {
   topAgents: { agent: string; count: number }[];
   topReferrers: { referrer_id: string; count: number }[];
   recentErrors: { ts: string; event_type: string; channel: string; meta: any }[];
+  recentUsers: { id: string; phone_hash: string | null; country: string | null; consent_status: string; created_at: string; first_seen_at: string | null; last_seen_at: string | null }[];
 }
 
 export async function GET() {
@@ -92,6 +93,7 @@ export async function GET() {
       topAgentsRes,
       topReferrersRes,
       recentErrorsRes,
+      recentUsersRes,
     ] = await Promise.all([
       // Visitors (distinct user_id from events)
       supabase.rpc('count_distinct_users', { since: h24 }),
@@ -144,6 +146,12 @@ export async function GET() {
         .in('event_type', ['provider_error', 'sms_outbound_failed'])
         .order('ts', { ascending: false })
         .limit(20),
+      
+      // Recent users (latest 20)
+      supabase.from('users')
+        .select('id, phone_hash, country, consent_status, created_at, first_seen_at, last_seen_at')
+        .order('created_at', { ascending: false })
+        .limit(20),
     ]);
 
     // Calculate latency percentiles
@@ -185,6 +193,7 @@ export async function GET() {
       topAgents: topAgentsRes.data || [],
       topReferrers: topReferrersRes.data || [],
       recentErrors: recentErrorsRes.data || [],
+      recentUsers: recentUsersRes.data || [],
     };
 
     return NextResponse.json({ ok: true, metrics }, {

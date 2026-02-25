@@ -25,6 +25,7 @@ interface MetricsData {
   topAgents: { agent: string; count: number }[];
   topReferrers: { referrer_id: string; count: number }[];
   recentErrors: { ts: string; event_type: string; channel: string; meta: any }[];
+  recentUsers: { id: string; phone_hash: string | null; country: string | null; consent_status: string; created_at: string; first_seen_at: string | null; last_seen_at: string | null }[];
 }
 
 function formatNumber(n: number): string {
@@ -218,6 +219,32 @@ export default function AdminPage() {
                 ))
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Recent Users Section */}
+        <div className="mt-6 bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-700">
+            <h3 className="text-sm font-medium text-white">Recent Users (Latest 20)</h3>
+          </div>
+          <div className="divide-y divide-slate-700 max-h-80 overflow-y-auto">
+            {metrics.recentUsers.length === 0 ? (
+              <div className="px-4 py-3 text-sm text-slate-500">No users yet</div>
+            ) : (
+              metrics.recentUsers.map((user, i) => (
+                <div key={i} className="px-4 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-500 font-mono">{user.id.slice(0, 8)}...</span>
+                    <span className="text-sm text-slate-300">{user.phone_hash ? `***${user.phone_hash.slice(-4)}` : 'No phone'}</span>
+                    <span className="text-xs text-slate-500">{user.country || 'Unknown'}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded ${user.consent_status === 'accepted' ? 'bg-green-900 text-green-300' : user.consent_status === 'pending' ? 'bg-yellow-900 text-yellow-300' : 'bg-red-900 text-red-300'}`}>
+                      {user.consent_status}
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-500">{new Date(user.created_at).toLocaleDateString()}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
