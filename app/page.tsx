@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import IPhoneFrame from '@/components/iPhoneFrame';
+import PhoneInput from '@/components/PhoneInput';
 
 interface Message {
   id: string;
@@ -18,75 +19,6 @@ const CHIPS = [
   { id: 'coordination', label: 'Coordination', response: 'Initiating Coordination...\n\nTeam Status:\n- Sarah: Available now\n- Mike: In meeting until 3 PM\n- Alex: Remote today\n\nShall I schedule a standup?' },
 ];
 
-// Phone formatting and validation helpers
-function extractDigits(input: string): string {
-  return input.replace(/\D/g, '');
-}
-
-function normalizePhone(input: string): string {
-  const digits = extractDigits(input);
-  
-  if (digits.length === 0) return '';
-  
-  // US number: 10 digits or 11 digits starting with 1
-  if (digits.length === 10) {
-    return `+1${digits}`;
-  }
-  if (digits.length === 11 && digits[0] === '1') {
-    return `+${digits}`;
-  }
-  
-  // International fallback
-  if (digits.length >= 8) {
-    return `+${digits}`;
-  }
-  
-  return `+${digits}`;
-}
-
-function formatPhoneDisplay(input: string): string {
-  const digits = extractDigits(input);
-  
-  if (digits.length === 0) return '';
-  
-  // Handle international numbers (non-US)
-  if (digits.length > 11 || (digits.length === 11 && digits[0] !== '1')) {
-    return '+' + digits;
-  }
-  
-  // US formatting
-  let country = '1';
-  let national = digits;
-  
-  if (digits.length === 11 && digits[0] === '1') {
-    country = '1';
-    national = digits.slice(1);
-  } else if (digits.length <= 10) {
-    country = '1';
-    national = digits.padStart(10, '0').slice(-10);
-    if (digits.length < 10) {
-      national = digits;
-    }
-  }
-  
-  const area = national.slice(0, 3);
-  const mid = national.slice(3, 6);
-  const last = national.slice(6, 10);
-  
-  let formatted = `+${country}`;
-  if (area) formatted += ` (${area}`;
-  if (area.length === 3) formatted += ')';
-  if (mid) formatted += ` ${mid}`;
-  if (last) formatted += `-${last}`;
-  
-  return formatted;
-}
-
-function isValidPhone(input: string): boolean {
-  const normalized = normalizePhone(input);
-  return /^\+\d{10,15}$/.test(normalized) && extractDigits(input).length >= 10;
-}
-
 function formatTime(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
@@ -101,22 +33,20 @@ export default function Home() {
 
   // Phone & consent state
   const [phoneDisplay, setPhoneDisplay] = useState('');
+  const [e164, setE164] = useState<string | null>(null);
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [consent, setConsent] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [consentError, setConsentError] = useState('');
   const [sessionPhone, setSessionPhone] = useState('');
 
-  // Validation
-  const isPhoneValid = phoneDisplay.length > 0 && isValidPhone(phoneDisplay);
+  // Form validation
   const isFormValid = isPhoneValid && consent;
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    // Allow typing digits and + only
-    if (!/^[\d\s\-\(\)\+\.]*$/.test(raw)) return;
-    
-    const formatted = formatPhoneDisplay(raw);
-    setPhoneDisplay(formatted);
+  const handlePhoneChange = (display: string, e164Value: string | null, valid: boolean) => {
+    setPhoneDisplay(display);
+    setE164(e164Value);
+    setIsPhoneValid(valid);
     setPhoneError('');
   };
 
@@ -124,8 +54,8 @@ export default function Home() {
     setPhoneError('');
     setConsentError('');
 
-    if (!isValidPhone(phoneDisplay)) {
-      setPhoneError('Enter a valid phone number (include country code).');
+    if (!isPhoneValid || !e164) {
+      setPhoneError('Enter a valid phone number.');
       return;
     }
 
@@ -134,8 +64,7 @@ export default function Home() {
       return;
     }
 
-    const normalized = normalizePhone(phoneDisplay);
-    setSessionPhone(normalized);
+    setSessionPhone(e164);
     setShowDemo(true);
   };
 
@@ -203,7 +132,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-200">
+    <main className="min-h-screen text-slate-200" style={{ backgroundColor: '#0F0F0F' }}>
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -231,16 +160,12 @@ export default function Home() {
 
           {/* Phone Input */}
           <div className="max-w-md mx-auto mb-4">
-            <input
-              type="tel"
+            <PhoneInput
               value={phoneDisplay}
               onChange={handlePhoneChange}
-              placeholder="+1 (415) 555-0123"
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+              placeholder="(415) 555-0123"
+              error={phoneError}
             />
-            {phoneError && (
-              <p className="mt-2 text-sm text-red-400">{phoneError}</p>
-            )}
           </div>
 
           {/* Consent Checkbox */}
