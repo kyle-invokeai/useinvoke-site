@@ -92,6 +92,7 @@ export default function Home() {
 
     // Track invoke attempt
     trackEvent('invoke_started', sessionId, { 
+      agent: 'intake',
       has_phone: !!e164,
       has_consent: consent 
     });
@@ -168,7 +169,12 @@ export default function Home() {
   }, [showDemo, sessionId, sessionPhone]);
 
   const handleChipClick = (chip: typeof CHIPS[0]) => {
-    // Track chip click
+    // Track chip click as invoke_started for dashboard metrics
+    trackEvent('invoke_started', sessionId, { 
+      agent: chip.id,
+      agent_label: chip.label 
+    });
+    // Also track agent_switched for session flow
     trackEvent('agent_switched', sessionId, { 
       agent: chip.id,
       agent_label: chip.label 
