@@ -118,6 +118,44 @@ export async function POST(request: Request) {
       );
     }
 
+    // If user_registered event, also create/update user in users table
+    if (event_type === 'user_registered' && meta?.phone_hash) {
+      const phoneHash = meta.phone_hash;
+      const country = meta.country || 'Unknown';
+      
+      // Upsert user (insert if not exists, update if exists)
+      const { error: userError } = await supabase
+        .from('users')
+        .upsert({
+          phone_hash: phoneHash,
+          country: country,
+          consent_status: 'accepted',
+          first_seen_at: new Date().toISOString(),
+          last_seen_at: new Date().toISOString(),
+        }, { onConflict: 'phone_hash' });
+      
+      if (userError) {
+        console.error('User upsert error:', userError);
+        // Don't fail the event if user upsert fails
+      }
+    }
+
+    // If consent_accepted event, update user consent status
+    if (event_type === 'consent_accepted' && meta?.phone_hash) {
+      const { error: consentError } = await supabase
+        .from('users')
+        .update({
+          consent_status: 'accepted',
+          consent_ts: new Date().toISOString(),
+          last_seen_at: new Date().toISOString(),
+        })
+        .eq('phone_hash', meta.phone_hash);
+      
+      if (consentError) {
+        console.error('User consent update error:', consentError);
+      }
+    }
+
     return NextResponse.json({ ok: true, id: data.id });
 
   } catch (err) {
