@@ -18,17 +18,73 @@ const CHIPS = [
   { id: 'coordination', label: 'Coordination', response: 'Initiating Coordination...\n\nTeam Status:\n- Sarah: Available now\n- Mike: In meeting until 3 PM\n- Alex: Remote today\n\nShall I schedule a standup?' },
 ];
 
-// Phone validation helpers
-function normalizePhone(phone: string): string {
-  const cleaned = phone.replace(/\s+|-|\.|\(|\)/g, '');
-  if (cleaned.startsWith('+')) return cleaned;
-  if (cleaned.length === 10) return `+1${cleaned}`;
-  return cleaned;
+// Phone formatting and validation helpers
+function extractDigits(input: string): string {
+  return input.replace(/\D/g, '');
 }
 
-function isValidPhone(phone: string): boolean {
-  const normalized = normalizePhone(phone);
-  return /^\+\d{10,15}$/.test(normalized);
+function normalizePhone(input: string): string {
+  const digits = extractDigits(input);
+  
+  if (digits.length === 0) return '';
+  
+  // US number: 10 digits or 11 digits starting with 1
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+  if (digits.length === 11 && digits[0] === '1') {
+    return `+${digits}`;
+  }
+  
+  // International fallback
+  if (digits.length >= 8) {
+    return `+${digits}`;
+  }
+  
+  return `+${digits}`;
+}
+
+function formatPhoneDisplay(input: string): string {
+  const digits = extractDigits(input);
+  
+  if (digits.length === 0) return '';
+  
+  // Handle international numbers (non-US)
+  if (digits.length > 11 || (digits.length === 11 && digits[0] !== '1')) {
+    return '+' + digits;
+  }
+  
+  // US formatting
+  let country = '1';
+  let national = digits;
+  
+  if (digits.length === 11 && digits[0] === '1') {
+    country = '1';
+    national = digits.slice(1);
+  } else if (digits.length <= 10) {
+    country = '1';
+    national = digits.padStart(10, '0').slice(-10);
+    if (digits.length < 10) {
+      national = digits;
+    }
+  }
+  
+  const area = national.slice(0, 3);
+  const mid = national.slice(3, 6);
+  const last = national.slice(6, 10);
+  
+  let formatted = `+${country}`;
+  if (area) formatted += ` (${area}`;
+  if (area.length === 3) formatted += ')';
+  if (mid) formatted += ` ${mid}`;
+  if (last) formatted += `-${last}`;
+  
+  return formatted;
+}
+
+function isValidPhone(input: string): boolean {
+  const normalized = normalizePhone(input);
+  return /^\+\d{10,15}$/.test(normalized) && extractDigits(input).length >= 10;
 }
 
 function formatTime(timestamp: number): string {
@@ -44,21 +100,31 @@ export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Phone & consent state
-  const [phone, setPhone] = useState('');
+  const [phoneDisplay, setPhoneDisplay] = useState('');
   const [consent, setConsent] = useState(false);
   const [phoneError, setPhoneError] = useState('');
   const [consentError, setConsentError] = useState('');
   const [sessionPhone, setSessionPhone] = useState('');
 
   // Validation
-  const isPhoneValid = phone.length > 0 && isValidPhone(phone);
+  const isPhoneValid = phoneDisplay.length > 0 && isValidPhone(phoneDisplay);
   const isFormValid = isPhoneValid && consent;
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    // Allow typing digits and + only
+    if (!/^[\d\s\-\(\)\+\.]*$/.test(raw)) return;
+    
+    const formatted = formatPhoneDisplay(raw);
+    setPhoneDisplay(formatted);
+    setPhoneError('');
+  };
 
   const handleInvoke = () => {
     setPhoneError('');
     setConsentError('');
 
-    if (!isValidPhone(phone)) {
+    if (!isValidPhone(phoneDisplay)) {
       setPhoneError('Enter a valid phone number (include country code).');
       return;
     }
@@ -68,7 +134,7 @@ export default function Home() {
       return;
     }
 
-    const normalized = normalizePhone(phone);
+    const normalized = normalizePhone(phoneDisplay);
     setSessionPhone(normalized);
     setShowDemo(true);
   };
@@ -167,12 +233,9 @@ export default function Home() {
           <div className="max-w-md mx-auto mb-4">
             <input
               type="tel"
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value);
-                setPhoneError('');
-              }}
-              placeholder="+1 415 555 0123"
+              value={phoneDisplay}
+              onChange={handlePhoneChange}
+              placeholder="+1 (415) 555-0123"
               className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
             />
             {phoneError && (
