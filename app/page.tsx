@@ -18,6 +18,19 @@ const CHIPS = [
   { id: 'coordination', label: 'Coordination', response: 'Initiating Coordination...\n\nTeam Status:\n- Sarah: Available now\n- Mike: In meeting until 3 PM\n- Alex: Remote today\n\nShall I schedule a standup?' },
 ];
 
+// Phone validation helpers
+function normalizePhone(phone: string): string {
+  const cleaned = phone.replace(/\s+|-|\.|\(|\)/g, '');
+  if (cleaned.startsWith('+')) return cleaned;
+  if (cleaned.length === 10) return `+1${cleaned}`;
+  return cleaned;
+}
+
+function isValidPhone(phone: string): boolean {
+  const normalized = normalizePhone(phone);
+  return /^\+\d{10,15}$/.test(normalized);
+}
+
 function formatTime(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
@@ -29,6 +42,36 @@ export default function Home() {
   const [isTyping, setIsTyping] = useState(false);
   const [showChips, setShowChips] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Phone & consent state
+  const [phone, setPhone] = useState('');
+  const [consent, setConsent] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [consentError, setConsentError] = useState('');
+  const [sessionPhone, setSessionPhone] = useState('');
+
+  // Validation
+  const isPhoneValid = phone.length > 0 && isValidPhone(phone);
+  const isFormValid = isPhoneValid && consent;
+
+  const handleInvoke = () => {
+    setPhoneError('');
+    setConsentError('');
+
+    if (!isValidPhone(phone)) {
+      setPhoneError('Enter a valid phone number (include country code).');
+      return;
+    }
+
+    if (!consent) {
+      setConsentError('Consent is required.');
+      return;
+    }
+
+    const normalized = normalizePhone(phone);
+    setSessionPhone(normalized);
+    setShowDemo(true);
+  };
 
   // Auto-type //invoke when demo starts
   useEffect(() => {
@@ -116,13 +159,54 @@ export default function Home() {
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
             Your direct command line to Invoke.
           </h1>
-          <p className="text-lg sm:text-xl text-slate-400 mb-12 max-w-xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-slate-400 mb-8 max-w-xl mx-auto leading-relaxed">
             Get tasks done, set reminders, plan your day, and coordinate with others — all through text.
           </p>
 
+          {/* Phone Input */}
+          <div className="max-w-md mx-auto mb-4">
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                setPhoneError('');
+              }}
+              placeholder="+1 415 555 0123"
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center"
+            />
+            {phoneError && (
+              <p className="mt-2 text-sm text-red-400">{phoneError}</p>
+            )}
+          </div>
+
+          {/* Consent Checkbox */}
+          <div className="max-w-md mx-auto mb-8 text-left">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => {
+                  setConsent(e.target.checked);
+                  setConsentError('');
+                }}
+                className="mt-1 w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-500 focus:ring-blue-500"
+              />
+              <span className="text-sm text-slate-400">
+                I agree to receive texts from Invoke. Msg & data rates may apply. Reply STOP to cancel.{' '}
+                <Link href="/privacy" className="text-blue-400 hover:underline">Privacy</Link> +{' '}
+                <Link href="/terms" className="text-blue-400 hover:underline">Terms</Link>.
+              </span>
+            </label>
+            {consentError && (
+              <p className="mt-2 text-sm text-red-400">{consentError}</p>
+            )}
+          </div>
+
           <button
-            onClick={() => setShowDemo(true)}
-            className="w-full max-w-md mx-auto px-8 py-4 text-base font-medium text-slate-950 bg-white rounded-lg hover:bg-slate-100 transition-colors"
+            onClick={handleInvoke}
+            disabled={!isFormValid}
+            className="w-full max-w-md mx-auto px-8 py-4 text-base font-medium text-slate-950 bg-white rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Invoke
           </button>
@@ -147,7 +231,10 @@ export default function Home() {
                   </div>
                   <span className="text-white font-semibold text-sm">Invoke</span>
                 </div>
-                <span className="text-slate-400 text-xs">SMS Demo</span>
+                <div className="text-right">
+                  <span className="text-slate-400 text-xs block">Session</span>
+                  <span className="text-slate-300 text-[10px]">{sessionPhone}</span>
+                </div>
               </div>
 
               {/* Messages Area */}
@@ -216,6 +303,7 @@ export default function Home() {
               setMessages([]);
               setInputText('');
               setShowChips(false);
+              // Keep phone and consent values
             }}
             className="mt-8 text-sm text-slate-400 hover:text-white transition-colors"
           >
