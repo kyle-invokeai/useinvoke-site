@@ -57,15 +57,15 @@ function IPhoneFrame({ children }: { children: React.ReactNode }) {
       <div 
         className="relative mx-auto overflow-hidden"
         style={{
-          width: 'clamp(320px, 90vw, 390px)',
-          height: 'clamp(680px, 85vh, 844px)',
+          width: 'clamp(340px, 95vw, 415px)',
+          height: 'clamp(720px, 90vh, 880px)',
           borderRadius: '54px',
           background: 'linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 50%, #1a1a1a 100%)',
           boxShadow: `
             0 0 0 2px #2a2a2a,
             0 0 0 4px #1a1a1a,
-            0 25px 80px -20px rgba(0,0,0,0.6),
-            0 50px 120px -40px rgba(0,0,0,0.4)
+            0 20px 60px -15px rgba(0,0,0,0.4),
+            0 40px 80px -30px rgba(0,0,0,0.25)
           `,
           transformStyle: 'preserve-3d',
         }}
@@ -115,7 +115,6 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   const [time, setTime] = useState(getCurrentTime());
   const [date, setDate] = useState(getCurrentDate());
   const [showNotification, setShowNotification] = useState(false);
-  const [vibrate, setVibrate] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -126,15 +125,10 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   }, []);
 
   useEffect(() => {
-    const vibrateTimer = setTimeout(() => {
-      setVibrate(true);
-      setTimeout(() => setVibrate(false), 400);
-    }, 300);
     const notificationTimer = setTimeout(() => {
       setShowNotification(true);
     }, 800);
     return () => {
-      clearTimeout(vibrateTimer);
       clearTimeout(notificationTimer);
     };
   }, []);
@@ -145,8 +139,6 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
       style={{
         background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
       }}
-      animate={vibrate ? { x: [-2, 2, -2, 2, 0] } : {}}
-      transition={{ duration: 0.4 }}
       onClick={onUnlock}
     >
       <div 
@@ -155,27 +147,6 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
           background: 'radial-gradient(ellipse at 50% 0%, rgba(100,100,150,0.15) 0%, transparent 50%)',
         }}
       />
-      <div className="absolute top-2 left-0 right-0 flex justify-between items-center px-8 pt-2 text-white text-xs font-medium z-20">
-        <span>{time}</span>
-        <div className="flex items-center gap-1.5">
-          <div className="flex gap-0.5">
-            <div className="w-1 h-2.5 bg-white rounded-sm" />
-            <div className="w-1 h-2.5 bg-white rounded-sm" />
-            <div className="w-1 h-2.5 bg-white rounded-sm" />
-            <div className="w-1 h-2.5 bg-white/40 rounded-sm" />
-          </div>
-          <div className="w-6 h-3 border border-white/40 rounded-sm flex items-center px-0.5">
-            <div className="w-4 h-1.5 bg-white rounded-sm" />
-          </div>
-        </div>
-      </div>
-      <div className="absolute top-20 left-1/2 -translate-x-1/2">
-        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-      </div>
       <div className="absolute top-32 left-0 right-0 text-center">
         <motion.h1 
           className="text-7xl font-light text-white tracking-tight"
@@ -225,14 +196,6 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
           </motion.div>
         )}
       </AnimatePresence>
-      <motion.div 
-        className="absolute bottom-12 left-0 right-0 text-center"
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <p className="text-white/60 text-sm font-medium">Swipe up to unlock</p>
-      </motion.div>
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/50 rounded-full" />
     </motion.div>
   );
 }
@@ -241,20 +204,17 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
 // MESSAGES APP COMPONENT
 // ============================================================================
 
-function MessagesApp({ firstName }: { firstName: string }) {
+function MessagesApp({ firstName, onComplete }: { firstName: string; onComplete?: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [showTyping, setShowTyping] = useState(false);
   const [showChips, setShowChips] = useState(false);
-  const [showMattFlow, setShowMattFlow] = useState(false);
-  const [showDelivered, setShowDelivered] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const chatScript = [
     `Hi ${firstName}.`,
-    "I'm your Invoke node.",
-    "You can route anything through me.",
-    "What would you like to invoke?",
+    "This number is now live.",
+    "What would you like to do?",
   ];
 
   const scrollToBottom = () => {
@@ -281,9 +241,9 @@ function MessagesApp({ firstName }: { firstName: string }) {
           timestamp: new Date(),
         }]);
         setCurrentStep(prev => prev + 1);
-      }, 1800);
+      }, 1600);
       return () => clearTimeout(messageTimer);
-    }, currentStep === 0 ? 500 : 1200);
+    }, currentStep === 0 ? 600 : 1400);
     return () => clearTimeout(timer);
   }, [currentStep, firstName]);
 
@@ -295,126 +255,35 @@ function MessagesApp({ firstName }: { firstName: string }) {
       body: chip,
       timestamp: new Date(),
     }]);
-    if (chip === 'reach someone') {
-      setTimeout(() => {
-        setShowTyping(true);
-        setTimeout(() => {
-          setShowTyping(false);
-          setMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            direction: 'outbound',
-            body: 'Who should I connect you to?',
-            timestamp: new Date(),
-          }]);
-          setTimeout(() => setShowMattFlow(true), 500);
-        }, 1500);
-      }, 400);
-    }
-  };
-
-  const handleMattClick = () => {
-    setShowMattFlow(false);
-    setMessages(prev => [...prev, {
-      id: Date.now().toString(),
-      direction: 'inbound',
-      body: 'Text Matt about AI commissioner rules.',
-      timestamp: new Date(),
-    }]);
-    const sequence = [
-      { msg: 'Adding Matt.', delay: 800 },
-      { msg: 'Drafting message.', delay: 1500 },
-      { msg: 'Hey Matt — want to lock in AI commissioner rules for this season this week?', delay: 2000, isDraft: true },
-      { msg: 'Send?', delay: 2500 },
-    ];
-    let cumulativeDelay = 600;
-    sequence.forEach(({ msg, delay, isDraft }) => {
-      cumulativeDelay += delay;
-      setTimeout(() => {
-        setShowTyping(true);
-        setTimeout(() => {
-          setShowTyping(false);
-          setMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            direction: isDraft ? 'inbound' : 'outbound',
-            body: msg,
-            timestamp: new Date(),
-            isDraft,
-          }]);
-          if (msg === 'Send?') {
-            setTimeout(() => setShowDelivered(true), 300);
-          }
-        }, isDraft ? 1200 : 800);
-      }, cumulativeDelay);
-    });
-  };
-
-  const handleSend = () => {
-    setShowDelivered(false);
-    setMessages(prev => [...prev, {
-      id: Date.now().toString(),
-      direction: 'inbound',
-      body: 'Send',
-      timestamp: new Date(),
-    }]);
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        direction: 'outbound',
-        body: 'Delivered.',
-        timestamp: new Date(),
-      }]);
-      setTimeout(() => {
-        setShowTyping(true);
-        setTimeout(() => {
-          setShowTyping(false);
-          setMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            direction: 'outbound',
-            body: 'Anything else?',
-            timestamp: new Date(),
-          }]);
-        }, 1200);
-      }, 600);
-    }, 400);
   };
 
   return (
-    <div className="flex flex-col h-full bg-black">
-      <div className="flex items-center justify-center px-4 pt-12 pb-3 bg-[#1a1a1a]/80 backdrop-blur-xl border-b border-white/5">
+    <div className="flex flex-col h-full bg-[#0a0a0a]">
+      <div className="flex items-center justify-center px-4 pt-14 pb-3 bg-[#141414]/90 backdrop-blur-xl">
         <div className="text-center">
-          <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">In</span>
+          <div className="w-7 h-7 mx-auto mb-1 rounded-full bg-[#28a745] flex items-center justify-center">
+            <span className="text-white text-[10px] font-bold">In</span>
           </div>
-          <p className="text-white text-sm font-semibold">Invoke</p>
+          <p className="text-white/90 text-[13px] font-medium">Invoke</p>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
         {messages.map((message) => (
           <motion.div
             key={message.id}
             className={`flex ${message.direction === 'inbound' ? 'justify-end' : 'justify-start'}`}
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           >
             <div
-              className={`max-w-[75%] px-4 py-2.5 text-[15px] leading-relaxed ${
+              className={`max-w-[72%] px-4 py-2.5 text-[15px] leading-snug ${
                 message.direction === 'inbound'
-                  ? 'bg-[#34c759] text-black rounded-2xl rounded-br-md'
-                  : 'bg-[#3a3a3c] text-white rounded-2xl rounded-bl-md'
+                  ? 'bg-[#28a745] text-white rounded-[18px] rounded-br-[6px]'
+                  : 'bg-[#2c2c2e] text-white/90 rounded-[18px] rounded-bl-[6px]'
               }`}
             >
               {message.body}
-              {message.isDraft && (
-                <div className="mt-2 pt-2 border-t border-black/10">
-                  <button
-                    onClick={handleSend}
-                    className="px-4 py-1.5 bg-black/10 hover:bg-black/20 rounded-full text-sm font-medium transition-colors"
-                  >
-                    Send
-                  </button>
-                </div>
-              )}
             </div>
           </motion.div>
         ))}
@@ -422,17 +291,17 @@ function MessagesApp({ firstName }: { firstName: string }) {
           {showTyping && (
             <motion.div
               className="flex justify-start"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              exit={{ opacity: 0, y: -8 }}
             >
-              <div className="bg-[#3a3a3c] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
+              <div className="bg-[#2c2c2e] rounded-[18px] rounded-bl-[6px] px-3.5 py-2.5 flex items-center gap-1">
                 {[0, 1, 2].map((i) => (
                   <motion.span
                     key={i}
-                    className="w-1.5 h-1.5 bg-white/60 rounded-full"
-                    animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }}
-                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
+                    className="w-1.5 h-1.5 bg-white/50 rounded-full"
+                    animate={{ y: [0, -3, 0], opacity: [0.4, 0.8, 0.4] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.12, ease: 'easeInOut' }}
                   />
                 ))}
               </div>
@@ -440,66 +309,37 @@ function MessagesApp({ firstName }: { firstName: string }) {
           )}
         </AnimatePresence>
         <AnimatePresence>
-          {showDelivered && !showTyping && (
-            <motion.p
-              className="text-[11px] text-white/40 text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+          {showChips && (
+            <motion.div
+              className="flex flex-wrap gap-2 pt-2"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              Delivered
-            </motion.p>
+              {['connect', 'schedule', 'research'].map((chip, i) => (
+                <motion.button
+                  key={chip}
+                  onClick={() => handleChipClick(chip)}
+                  className="px-4 py-2 bg-[#1c1c1e] hover:bg-[#2c2c2e] text-white/70 hover:text-white/90 rounded-full text-[13px] font-normal transition-colors"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08, duration: 0.25 }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  {chip}
+                </motion.button>
+              ))}
+            </motion.div>
           )}
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
-      <AnimatePresence>
-        {showChips && !showMattFlow && (
-          <motion.div
-            className="px-4 pb-4 space-y-2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {['reach someone', 'schedule something', 'research something'].map((chip, i) => (
-              <motion.button
-                key={chip}
-                onClick={() => handleChipClick(chip)}
-                className="block w-full text-left px-4 py-3 bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white/90 rounded-xl text-sm transition-colors"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.3 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {chip}
-              </motion.button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showMattFlow && (
-          <motion.div
-            className="px-4 pb-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-          >
-            <button
-              onClick={handleMattClick}
-              className="block w-full text-left px-4 py-3 bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white/90 rounded-xl text-sm transition-colors"
-            >
-              Text Matt about AI commissioner rules.
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <div className="px-4 pb-8 pt-2 bg-[#1a1a1a]">
-        <div className="flex items-center gap-2 bg-[#2c2c2e] rounded-full px-4 py-2">
-          <div className="flex-1 text-white/40 text-sm">iMessage</div>
-          <button className="w-8 h-8 bg-[#34c759] rounded-full flex items-center justify-center">
-            <Send className="w-4 h-4 text-black" />
+      <div className="px-4 pb-8 pt-3 bg-[#0a0a0a]">
+        <div className="flex items-center gap-2 bg-[#1c1c1e] rounded-full px-4 py-2.5">
+          <div className="flex-1 text-white/30 text-[15px]">iMessage</div>
+          <button className="w-7 h-7 bg-[#28a745] rounded-full flex items-center justify-center">
+            <Send className="w-3.5 h-3.5 text-white" />
           </button>
         </div>
       </div>
@@ -522,6 +362,7 @@ function LandingPage({
   setConsent,
   onInvoke,
   isTransitioning,
+  isDark,
 }: {
   firstName: string;
   setFirstName: (v: string) => void;
@@ -533,6 +374,7 @@ function LandingPage({
   setConsent: (v: boolean) => void;
   onInvoke: () => void;
   isTransitioning: boolean;
+  isDark: boolean;
 }) {
   const [errors, setErrors] = useState({ firstName: '', phone: '', consent: '' });
 
@@ -554,14 +396,22 @@ function LandingPage({
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center px-6 transition-all duration-700 ${isTransitioning ? 'blur-md opacity-30 scale-95' : ''}`}>
+    <div 
+      className={`min-h-screen flex flex-col items-center justify-center px-6 transition-all duration-700 relative overflow-hidden ${isTransitioning ? 'blur-md opacity-30 scale-95' : ''}`}
+      style={{
+        background: isDark 
+          ? 'radial-gradient(ellipse at center, #111827 0%, #030712 70%)'
+          : 'radial-gradient(ellipse at center, #f9fafb 0%, #e5e7eb 70%)'
+      }}
+    >
       <motion.div
-        className="mb-12"
+        className="mb-12 text-center"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Invoke</h1>
+        <p className="mt-2 text-lg font-light text-gray-500 dark:text-gray-400 lowercase">invoke anything.</p>
       </motion.div>
       <motion.div
         className="w-full max-w-sm space-y-4"
@@ -569,6 +419,9 @@ function LandingPage({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
       >
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 tracking-wide">
+          joining the founding waitlist
+        </p>
         <div>
           <input
             type="text"
@@ -668,15 +521,25 @@ export default function InvokeDemo() {
     setStep('transition');
     setTimeout(() => {
       setStep('lock-screen');
-    }, 1200);
+    }, 800);
   };
 
   const handleUnlock = () => {
     setStep('unlocking');
     setTimeout(() => {
       setStep('messages');
-    }, 900);
+    }, 600);
   };
+
+  // Auto-unlock after 1500ms hold on lock screen
+  useEffect(() => {
+    if (step === 'lock-screen') {
+      const timer = setTimeout(() => {
+        handleUnlock();
+      }, 2300); // 800ms (notification) + 1500ms hold
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
@@ -693,6 +556,7 @@ export default function InvokeDemo() {
             setConsent={setConsent}
             onInvoke={handleInvoke}
             isTransitioning={false}
+            isDark={isDark}
           />
         )}
       </AnimatePresence>
@@ -730,8 +594,8 @@ export default function InvokeDemo() {
                   <motion.div
                     key="unlocking"
                     initial={{ scale: 1 }}
-                    animate={{ scale: 1.1, filter: 'blur(20px)', opacity: 0 }}
-                    transition={{ duration: 0.4 }}
+                    animate={{ scale: 1.08, filter: 'blur(16px)', opacity: 0 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                     className="w-full h-full"
                   >
                     <LockScreen onUnlock={() => {}} />
