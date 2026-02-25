@@ -23,6 +23,34 @@ function formatTime(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
+// Generate a session ID for tracking
+function generateSessionId(): string {
+  return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+// Send event to analytics API
+async function trackEvent(eventType: string, sessionId: string, meta: Record<string, any> = {}) {
+  try {
+    await fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_type: eventType,
+        session_id: sessionId,
+        channel: 'web_demo',
+        meta: {
+          ...meta,
+          url: typeof window !== 'undefined' ? window.location.href : '',
+          userAgent: typeof window !== 'undefined' ? navigator.userAgent.slice(0, 50) : '',
+        },
+      }),
+    });
+  } catch (err) {
+    // Silently fail - don't block user experience
+    console.error('Event tracking failed:', err);
+  }
+}
+
 export default function Home() {
   const [showDemo, setShowDemo] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -30,6 +58,9 @@ export default function Home() {
   const [isTyping, setIsTyping] = useState(false);
   const [showChips, setShowChips] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Session tracking
+  const [sessionId] = useState(() => generateSessionId());
 
   // Phone & consent state
   const [phoneDisplay, setPhoneDisplay] = useState('');
@@ -53,6 +84,12 @@ export default function Home() {
   const handleInvoke = () => {
     setPhoneError('');
     setConsentError('');
+
+    // Track invoke attempt
+    trackEvent('invoke_started', sessionId, { 
+      has_phone: !!e164,
+      has_consent: consent 
+    });
 
     if (!isPhoneValid || !e164) {
       setPhoneError('Enter a valid phone number.');
@@ -110,7 +147,27 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Track page view on mount
+  useEffect(() => {
+    trackEvent('page_view', sessionId, { page: 'landing' });
+  }, [sessionId]);
+
+  // Track demo start when it becomes visible
+  useEffect(() => {
+    if (showDemo) {
+      trackEvent('session_started', sessionId, { 
+        agent: 'intake',
+        phone_country: sessionPhone.startsWith('+1') ? 'US' : 'INTL'
+      });
+    }
+  }, [showDemo, sessionId, sessionPhone]);
+
   const handleChipClick = (chip: typeof CHIPS[0]) => {
+    // Track chip click
+    trackEvent('agent_switched', sessionId, { 
+      agent: chip.id,
+      agent_label: chip.label 
+    });
     const userMsg: Message = {
       id: Date.now().toString(),
       direction: 'inbound',
