@@ -158,46 +158,50 @@ export default function Home() {
             Get tasks done, set reminders, plan your day, and coordinate with others — all through text.
           </p>
 
-          {/* Phone Input */}
-          <div className="max-w-md mx-auto mb-4">
-            <PhoneInput
-              value={phoneDisplay}
-              onChange={handlePhoneChange}
-              placeholder="(415) 555-0123"
-              error={phoneError}
-            />
-          </div>
-
-          {/* Consent Checkbox */}
-          <div className="max-w-md mx-auto mb-8 text-left">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => {
-                  setConsent(e.target.checked);
-                  setConsentError('');
-                }}
-                className="mt-1 w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-500 focus:ring-blue-500"
+          {/* Intake Block - Constrained and mobile-clean */}
+          <div className="w-full max-w-[420px] mx-auto">
+            {/* Phone Input */}
+            <div className="mb-3">
+              <PhoneInput
+                value={phoneDisplay}
+                onChange={handlePhoneChange}
+                placeholder="(415) 555-0123"
+                error={phoneError}
               />
-              <span className="text-sm text-slate-400">
-                I agree to receive texts from Invoke. Msg & data rates may apply. Reply STOP to cancel.{' '}
-                <Link href="/privacy" className="text-blue-400 hover:underline">Privacy</Link> +{' '}
-                <Link href="/terms" className="text-blue-400 hover:underline">Terms</Link>.
-              </span>
-            </label>
-            {consentError && (
-              <p className="mt-2 text-sm text-red-400">{consentError}</p>
-            )}
-          </div>
+            </div>
 
-          <button
-            onClick={handleInvoke}
-            disabled={!isFormValid}
-            className="w-full max-w-md mx-auto px-8 py-4 text-base font-medium text-slate-950 bg-white rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Invoke
-          </button>
+            {/* Consent Checkbox */}
+            <div className="mb-5 text-left">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => {
+                    setConsent(e.target.checked);
+                    setConsentError('');
+                  }}
+                  className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-500 focus:ring-blue-500 shrink-0"
+                />
+                <span className="text-xs text-slate-400 leading-snug">
+                  I agree to receive texts from Invoke. Msg & data rates may apply. Reply STOP to cancel.{' '}
+                  <Link href="/privacy" className="text-blue-400 hover:underline">Privacy</Link> +{' '}
+                  <Link href="/terms" className="text-blue-400 hover:underline">Terms</Link>.
+                </span>
+              </label>
+              {consentError && (
+                <p className="mt-1.5 text-xs text-red-400">{consentError}</p>
+              )}
+            </div>
+
+            {/* CTA Button */}
+            <button
+              onClick={handleInvoke}
+              disabled={!isFormValid}
+              className="w-full sm:w-[260px] mx-auto h-11 px-6 text-sm font-medium text-slate-950 bg-white rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Invoke
+            </button>
+          </div>
         </div>
       </section>
       {/* Demo Experience - Slides in when activated */}

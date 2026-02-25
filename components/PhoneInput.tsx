@@ -184,16 +184,16 @@ export default function PhoneInput({
 
   return (
     <div className={`relative ${className}`}>
-      <div className="flex items-stretch">
+      <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:gap-0">
         {/* Country Selector */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-3 bg-slate-800 border border-slate-700 border-r-0 rounded-l-lg text-white hover:bg-slate-700 transition-colors min-w-[80px]"
+          className="flex items-center justify-center sm:justify-start gap-2 px-3 h-11 bg-slate-800 border border-slate-700 sm:border-r-0 rounded-lg sm:rounded-l-lg sm:rounded-r-none text-white hover:bg-slate-700 transition-colors w-full sm:w-[96px] shrink-0"
         >
-          <span className="text-lg">{selectedCountry.flag}</span>
+          <span className="text-base">{selectedCountry.flag}</span>
           <span className="text-sm text-slate-300">{selectedCountry.dialCode}</span>
-          <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
@@ -205,7 +205,7 @@ export default function PhoneInput({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={isInternational ? '+1 415 555 0123' : placeholder}
-          className="flex-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-r-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 min-w-0 px-4 h-11 bg-slate-900 border border-slate-800 rounded-lg sm:rounded-l-none sm:rounded-r-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
         />
       </div>
 
@@ -246,7 +246,7 @@ export default function PhoneInput({
 
       {/* Error message */}
       {error && (
-        <p className="mt-2 text-sm text-red-400">{error}</p>
+        <p className="mt-1.5 text-xs text-red-400">{error}</p>
       )}
     </div>
   );
